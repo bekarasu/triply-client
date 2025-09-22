@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { markOnboardingCompleted } from '@/utils/onboarding'
+import { LoggerService } from '@/services/logger'
 
 const { width } = Dimensions.get('window')
 
@@ -20,7 +21,7 @@ export default function OnboardingTwo() {
 			await markOnboardingCompleted()
 			router.replace('/login' as any)
 		} catch (error) {
-			console.error('Error completing onboarding:', error)
+			LoggerService.error('Error completing onboarding:', error)
 			router.replace('/login' as any)
 		}
 	}

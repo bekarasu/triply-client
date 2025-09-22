@@ -1,21 +1,22 @@
+import { authService } from '@/services/auth-service'
+import { ApiError } from '@/services/http-client'
+import { LoggerService } from '@/services/logger'
+import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import {
-	View,
+	ActivityIndicator,
+	Alert,
+	Keyboard,
+	KeyboardAvoidingView,
+	Platform,
+	SafeAreaView,
+	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
-	StyleSheet,
-	SafeAreaView,
-	Alert,
-	ActivityIndicator,
-	KeyboardAvoidingView,
-	Platform,
 	TouchableWithoutFeedback,
-	Keyboard,
+	View,
 } from 'react-native'
-import { useRouter } from 'expo-router'
-import { authService } from '@/services/auth-service'
-import { ApiError } from '@/services/http-client'
 
 export default function LoginScreen() {
 	const [email, setEmail] = useState('')
@@ -24,12 +25,12 @@ export default function LoginScreen() {
 	const router = useRouter()
 
 	const handlePasswordChange = (text: string) => {
-		console.log('Password changed, length:', text.length)
+		LoggerService.log('Password changed, length:', text.length)
 		setPassword(text)
 	}
 
 	const handleLogin = async () => {
-		console.log('Login attempt with:', {
+		LoggerService.log('Login attempt with:', {
 			email,
 			password: password.length > 0 ? '***' : 'EMPTY',
 		})
@@ -47,13 +48,11 @@ export default function LoginScreen() {
 
 		setLoading(true)
 		try {
-			const response = await authService.login({ email, password })
-			console.log('Login successful:', response)
+			await authService.login({ email, password })
 
 			// Navigate to main app
 			router.replace('/home' as any)
 		} catch (error: any) {
-			console.error('Login error:', error)
 			const apiError = error as ApiError
 			Alert.alert(
 				'Login Failed',

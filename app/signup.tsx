@@ -82,8 +82,6 @@ export default function SignupScreen() {
 				lastName,
 			})
 
-			console.log('Pre-registration successful:', response)
-
 			// Navigate to OTP verification screen
 			router.push({
 				pathname: '/verify-otp' as any,
@@ -93,7 +91,6 @@ export default function SignupScreen() {
 				},
 			})
 		} catch (error: any) {
-			console.error('Signup error:', error)
 			const apiError = error as ApiError
 			Alert.alert(
 				'Registration Failed',

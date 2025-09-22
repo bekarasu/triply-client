@@ -12,6 +12,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { authService } from '@/services/auth-service'
 import { ApiError } from '@/services/http-client'
+import { LoggerService } from '@/services/logger'
 
 export default function VerifyOtpScreen() {
 	const [otpCode, setOtpCode] = useState('')
@@ -64,12 +65,11 @@ export default function VerifyOtpScreen() {
 
 		setLoading(true)
 		try {
-			const response = await authService.verifyOtp({
+			await authService.verifyOtp({
 				otpCode,
 				otpToken,
 			})
 
-			console.log('OTP verification successful:', response)
 			Alert.alert('Success', 'Account created successfully!', [
 				{
 					text: 'OK',
@@ -77,7 +77,7 @@ export default function VerifyOtpScreen() {
 				},
 			])
 		} catch (error: any) {
-			console.error('OTP verification error:', error)
+			LoggerService.log('OTP verification error:', error)
 			const apiError = error as ApiError
 			Alert.alert(
 				'Verification Failed',
@@ -118,7 +118,6 @@ export default function VerifyOtpScreen() {
 				})
 			}, 1000)
 		} catch (error: any) {
-			console.error('Resend OTP error:', error)
 			const apiError = error as ApiError
 			Alert.alert(
 				'Resend Failed',

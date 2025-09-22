@@ -13,6 +13,7 @@ import {
 	Token,
 	User,
 } from './auth-types'
+import { LoggerService } from './logger'
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -28,6 +29,7 @@ class AuthService {
 			const loginRequest = {
 				credentials,
 			}
+			LoggerService.log(API_CONFIG.ENDPOINTS.AUTH.LOGIN('triply'))
 
 			const response: ApiResponse<LoginResponse> = await httpClient.post(
 				API_CONFIG.ENDPOINTS.AUTH.LOGIN('triply'),
@@ -39,7 +41,7 @@ class AuthService {
 
 			return response.data
 		} catch (error) {
-			console.error('Login error:', error)
+			LoggerService.log('Login error:', error)
 			throw error
 		}
 	}
@@ -57,7 +59,7 @@ class AuthService {
 
 			return response.data
 		} catch (error) {
-			console.error('Pre-register error:', error)
+			LoggerService.log('Pre-register error:', error)
 			throw error
 		}
 	}
@@ -75,7 +77,7 @@ class AuthService {
 
 			return response.data
 		} catch (error) {
-			console.error('Verify OTP error:', error)
+			LoggerService.log('Verify OTP error:', error)
 			throw error
 		}
 	}
@@ -93,7 +95,7 @@ class AuthService {
 
 			return response.data
 		} catch (error) {
-			console.error('Resend OTP error:', error)
+			LoggerService.log('Resend OTP error:', error)
 			throw error
 		}
 	}
@@ -106,7 +108,7 @@ class AuthService {
 				[STORAGE_KEYS.REFRESH_TOKEN, token.refreshToken],
 			])
 		} catch (error) {
-			console.error('Error storing tokens:', error)
+			LoggerService.log('Error storing tokens:', error)
 			throw error
 		}
 	}
@@ -117,7 +119,7 @@ class AuthService {
 			const tokenData = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN)
 			return tokenData ? JSON.parse(tokenData) : null
 		} catch (error) {
-			console.error('Error getting stored token:', error)
+			LoggerService.log('Error getting stored token:', error)
 			return null
 		}
 	}
@@ -134,7 +136,7 @@ class AuthService {
 
 			return expirationTime > now
 		} catch (error) {
-			console.error('Error checking authentication:', error)
+			LoggerService.log('Error checking authentication:', error)
 			return false
 		}
 	}
@@ -148,7 +150,7 @@ class AuthService {
 				STORAGE_KEYS.USER,
 			])
 		} catch (error) {
-			console.error('Error during logout:', error)
+			LoggerService.log('Error during logout:', error)
 			throw error
 		}
 	}
@@ -163,7 +165,7 @@ class AuthService {
 				Authorization: `Bearer ${token.accessToken}`,
 			}
 		} catch (error) {
-			console.error('Error getting auth header:', error)
+			LoggerService.log('Error getting auth header:', error)
 			return null
 		}
 	}
@@ -173,7 +175,7 @@ class AuthService {
 		try {
 			await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
 		} catch (error) {
-			console.error('Error storing user data:', error)
+			LoggerService.log('Error storing user data:', error)
 			throw error
 		}
 	}
@@ -184,7 +186,7 @@ class AuthService {
 			const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER)
 			return userData ? JSON.parse(userData) : null
 		} catch (error) {
-			console.error('Error getting stored user data:', error)
+			LoggerService.log('Error getting stored user data:', error)
 			return null
 		}
 	}
