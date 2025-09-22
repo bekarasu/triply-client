@@ -1,4 +1,4 @@
-import { ENV_CONFIG } from '../utils/env-config';
+import { ENV_CONFIG } from '../utils/env-config'
 
 // Environment-based service URLs
 const SERVICE_BASE_URL = {
