@@ -8,8 +8,9 @@ export interface ApiResponse<T = any> {
 }
 
 export interface ApiError {
+	status: number
+	code: string
 	message: string
-	status?: number
 	details?: any
 }
 
@@ -45,7 +46,9 @@ class HttpClient {
 				const errorData = await response.json().catch(() => ({}))
 				throw {
 					message:
-						errorData.message || `HTTP Error: ${response.status}`,
+						errorData.error?.message ||
+						`HTTP Error: ${response.status}`,
+					code: errorData.error?.code || 'HTTP_ERROR',
 					status: response.status,
 					details: errorData,
 				} as ApiError
