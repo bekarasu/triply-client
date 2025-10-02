@@ -22,6 +22,7 @@ export default function HomeScreen() {
 		loadUserData()
 	}, [])
 
+	// TODO send request every app launch to refresh user data
 	const loadUserData = async () => {
 		try {
 			const profileData = await profileService.getStoredData()
