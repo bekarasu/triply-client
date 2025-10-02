@@ -1,50 +1,104 @@
-# Welcome to your Expo app 👋
+# Triply
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Your personal travel companion that makes trip planning effortless and exciting.
 
-## Get started
+## ✨ What is Triply?
 
-1. Install dependencies
+Triply is a mobile travel app designed to transform how you plan and experience your journeys. Whether you're dreaming of a weekend getaway or planning an epic adventure, Triply helps you discover, organize, and enjoy every moment of your travels.
 
-   ```bash
-   npm install
-   ```
+## 🌟 What Can You Do with Triply?
 
-2. Start the app
+### 🗺️ **Plan Your Perfect Trip**
 
-   ```bash
-   npx expo start
-   ```
+Create detailed itineraries for your travels. Add destinations, set dates, and organize your entire journey in one place. From quick city breaks to multi-country adventures, Triply keeps everything organized.
 
-In the output, you'll find options to open the app in a
+### 🏙️ **Discover Amazing Destinations**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Explore cities around the world with detailed information about each location. Learn about local attractions, culture, weather, and what makes each destination special before you visit.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 💡 **Get Personalized Recommendations**
 
-## Get a fresh project
+Receive tailored travel suggestions based on your interests and preferences. Discover hidden gems, popular attractions, restaurants, and activities that match your travel style.
 
-When you're ready, run:
+### 👤 **Manage Your Travel Profile**
+
+Create your personal travel profile to track your journeys, save favorite destinations, and get recommendations that fit your unique travel preferences.
+
+### 🔐 **Secure & Easy Access**
+
+Sign up quickly and securely with email verification. Your travel plans and preferences are safely stored and accessible whenever you need them.
+
+## 📱 Available On
+
+- **iPhone & iPad** - Native iOS experience
+- **Android Phones & Tablets** - Optimized for all Android devices  
+- **Web Browser** - Access your trips from any computer
+
+## 🚀 Getting Started
+
+### For Users
+
+1. **Download the App**
+   - Available on iOS App Store and Google Play Store
+   - Or visit our web version in your browser
+
+2. **Create Your Account**
+   - Sign up with your email
+   - Verify your account through the secure OTP process
+   - Complete the quick onboarding to personalize your experience
+
+3. **Start Planning**
+   - Create your first trip
+   - Explore destinations
+   - Get personalized recommendations
+   - Build your perfect itinerary
+
+### For Developers
+
+If you're a developer wanting to contribute to or run this project locally:
+
+#### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI
+- Xcode (for iOS development)
+- Android Studio (for Android development)
+
+#### Installation
 
 ```bash
-npm run reset-project
+# Clone the repository
+git clone <repository-url>
+cd triply-client
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🎯 Perfect For
 
-## Learn more
+- **Weekend Explorers** - Planning quick getaways and city breaks
+- **Adventure Seekers** - Organizing multi-destination trips and adventures  
+- **Culture Enthusiasts** - Discovering local experiences and hidden gems
+- **Business Travelers** - Managing travel itineraries efficiently
+- **Family Vacationers** - Planning memorable family trips with everyone in mind
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🌍 Why Choose Triply?
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+**Simple & Intuitive**: Easy-to-use interface that makes trip planning enjoyable, not overwhelming.
 
-## Join the community
+**Personalized Experience**: Recommendations and suggestions tailored to your travel style and interests.
 
-Join our community of developers creating universal apps.
+**All-in-One Platform**: Everything you need for travel planning in one convenient app.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**Cross-Device Access**: Start planning on your phone, continue on your tablet, finish on your computer.
+
+**Secure & Reliable**: Your travel data is protected with industry-standard security measures.
+
+## 📞 Support
+
+Have questions or need help? Contact our support team at [burakeren.karasu@gmail.com](mailto:burakeren.karasu@gmail.com)
