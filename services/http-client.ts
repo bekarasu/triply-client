@@ -1,6 +1,6 @@
 // HTTP Client with error handling
 import { API_CONFIG } from './api-config'
-
+import { tokenManager } from './auth/token-manager'
 export interface ApiResponse<T = any> {
 	success: boolean
 	message: string
@@ -14,21 +14,81 @@ export interface ApiError {
 	details?: any
 }
 
+interface QueuedRequest {
+	resolve: (value: any) => void
+	reject: (error: any) => void
+	url: string
+	config: RequestInit
+}
+
 class HttpClient {
 	private timeout: number
+	private isRefreshing: boolean = false
+	private requestQueue: QueuedRequest[] = []
 
 	constructor() {
 		this.timeout = API_CONFIG.TIMEOUT
+	}
+
+	private async processQueuedRequests(): Promise<void> {
+		const authHeader = await tokenManager.getAuthHeader()
+
+		// Process all queued requests
+		const requests = [...this.requestQueue]
+		this.requestQueue = []
+
+		for (const queuedRequest of requests) {
+			try {
+				const retryConfig = {
+					...queuedRequest.config,
+					headers: {
+						...queuedRequest.config.headers,
+						...authHeader,
+					},
+				}
+
+				const response = await fetch(queuedRequest.url, retryConfig)
+				if (response.ok) {
+					const data = await response.json()
+					queuedRequest.resolve(data)
+				} else {
+					const errorData = await response.json().catch(() => ({}))
+					queuedRequest.reject({
+						message:
+							errorData.error?.message ||
+							`HTTP Error: ${response.status}`,
+						code: errorData.error?.code || 'HTTP_ERROR',
+						status: response.status,
+						details: errorData,
+					} as ApiError)
+				}
+			} catch (error) {
+				queuedRequest.reject(error)
+			}
+		}
+	}
+
+	private rejectQueuedRequests(error: ApiError): void {
+		const requests = [...this.requestQueue]
+		this.requestQueue = []
+
+		for (const queuedRequest of requests) {
+			queuedRequest.reject(error)
+		}
 	}
 
 	private async request<T>(
 		url: string,
 		options: RequestInit = {},
 	): Promise<ApiResponse<T>> {
+		// Get auth header if available
+		const authHeader = await tokenManager.getAuthHeader()
+
 		const config: RequestInit = {
 			...options,
 			headers: {
 				'Content-Type': 'application/json',
+				...authHeader,
 				...options.headers,
 			},
 		}
@@ -44,14 +104,73 @@ class HttpClient {
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({}))
-				throw {
-					message:
-						errorData.error?.message ||
-						`HTTP Error: ${response.status}`,
-					code: errorData.error?.code || 'HTTP_ERROR',
-					status: response.status,
-					details: errorData,
-				} as ApiError
+
+				if (response.status === 401) {
+					if (this.isRefreshing) {
+						// If token refresh is in progress, queue this request
+						return new Promise<ApiResponse<T>>(
+							(resolve, reject) => {
+								this.requestQueue.push({
+									resolve,
+									reject,
+									url,
+									config,
+								})
+							},
+						)
+					}
+
+					this.isRefreshing = true
+
+					try {
+						const refreshSuccessful =
+							await tokenManager.handle401Unauthorized()
+
+						if (!refreshSuccessful) {
+							// Reject all queued requests if refresh failed
+							this.rejectQueuedRequests({
+								message:
+									errorData.error?.message ||
+									`HTTP Error: ${response.status}`,
+								code: errorData.error?.code || 'HTTP_ERROR',
+								status: response.status,
+								details: errorData,
+							} as ApiError)
+
+							throw {
+								message:
+									errorData.error?.message ||
+									`HTTP Error: ${response.status}`,
+								code: errorData.error?.code || 'HTTP_ERROR',
+								status: response.status,
+								details: errorData,
+							} as ApiError
+						}
+
+						// Process queued requests after successful token refresh
+						this.processQueuedRequests()
+
+						// Retry the original request
+						const authHeader = await tokenManager.getAuthHeader()
+						if (authHeader) {
+							const retryConfig = {
+								...config,
+								headers: {
+									...config.headers,
+									...authHeader,
+								},
+							}
+
+							const retryResponse = await fetch(url, retryConfig)
+							if (retryResponse.ok) {
+								const retryData = await retryResponse.json()
+								return retryData
+							}
+						}
+					} finally {
+						this.isRefreshing = false
+					}
+				}
 			}
 
 			const data = await response.json()
