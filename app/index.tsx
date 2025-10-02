@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
-import { useRouter } from 'expo-router'
-import { View, Text, StyleSheet } from 'react-native'
+import { authService } from '@/services/auth/service'
 import { isOnboardingCompleted } from '@/utils/onboarding'
-import { authService } from '@/services/auth-service'
+import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { StyleSheet, Text, View } from 'react-native'
 
 export default function Index() {
 	const router = useRouter()

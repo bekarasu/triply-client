@@ -1,4 +1,3 @@
-// Authentication Types
 export interface LoginCredentials {
 	email: string
 	password: string
@@ -52,16 +51,16 @@ export interface ResendOtpResponse {
 	email: string
 }
 
-export interface User {
-	id: string
-	email: string
-	firstName: string
-	lastName: string
+export interface RefreshTokenRequest {
+	refreshToken: string
+}
+
+export interface RefreshTokenResponse {
+	token: Token
 }
 
 export interface AuthState {
 	isAuthenticated: boolean
-	user: User | null
 	token: Token | null
 	loading: boolean
 }

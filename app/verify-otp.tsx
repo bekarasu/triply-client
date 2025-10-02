@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { authService } from '@/services/auth/service'
+import { ApiError } from '@/services/http-client'
+import { LoggerService } from '@/services/logger'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import React, { useEffect, useRef, useState } from 'react'
 import {
-	View,
+	ActivityIndicator,
+	Alert,
+	SafeAreaView,
+	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
-	StyleSheet,
-	SafeAreaView,
-	Alert,
-	ActivityIndicator,
+	View,
 } from 'react-native'
-import { useRouter, useLocalSearchParams } from 'expo-router'
-import { authService } from '@/services/auth-service'
-import { ApiError } from '@/services/http-client'
-import { LoggerService } from '@/services/logger'
 
 export default function VerifyOtpScreen() {
 	const [otpCode, setOtpCode] = useState('')
@@ -70,12 +70,7 @@ export default function VerifyOtpScreen() {
 				otpToken,
 			})
 
-			Alert.alert('Success', 'Account created successfully!', [
-				{
-					text: 'OK',
-					onPress: () => router.replace('/home' as any),
-				},
-			])
+			router.replace('/home' as any)
 		} catch (error: any) {
 			LoggerService.log('OTP verification error:', error)
 			const apiError = error as ApiError
@@ -245,7 +240,7 @@ const styles = StyleSheet.create({
 		fontSize: 24,
 		fontWeight: 'bold',
 		backgroundColor: '#f9f9f9',
-		letterSpacing: 8,
+		letterSpacing: 4,
 	},
 	verifyButton: {
 		backgroundColor: '#007AFF',

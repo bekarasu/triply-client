@@ -1,22 +1,22 @@
+import { authService } from '@/services/auth/service'
+import { ApiError } from '@/services/http-client'
+import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import {
-	View,
+	ActivityIndicator,
+	Alert,
+	Keyboard,
+	KeyboardAvoidingView,
+	Platform,
+	SafeAreaView,
+	ScrollView,
+	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
-	StyleSheet,
-	SafeAreaView,
-	Alert,
-	ActivityIndicator,
-	ScrollView,
-	KeyboardAvoidingView,
-	Platform,
 	TouchableWithoutFeedback,
-	Keyboard,
+	View,
 } from 'react-native'
-import { useRouter } from 'expo-router'
-import { authService } from '@/services/auth-service'
-import { ApiError } from '@/services/http-client'
 
 export default function SignupScreen() {
 	const [email, setEmail] = useState('')

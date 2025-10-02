@@ -1,25 +1,25 @@
 // Authentication Service
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { httpClient, ApiResponse } from './http-client'
-import { API_CONFIG } from './api-config'
+import { API_CONFIG } from '../api-config'
+import { ApiResponse, httpClient } from '../http-client'
+import { LoggerService } from '../logger'
+import { tokenManager } from './token-manager'
 import {
 	LoginCredentials,
 	LoginResponse,
 	PreRegisterRequest,
 	PreRegisterResponse,
-	VerifyOtpRequest,
 	ResendOtpRequest,
 	ResendOtpResponse,
 	Token,
-	User,
-} from './auth-types'
-import { LoggerService } from './logger'
+	VerifyOtpRequest,
+} from './types'
 
-// Storage keys
-const STORAGE_KEYS = {
-	TOKEN: 'auth_token',
-	REFRESH_TOKEN: 'refresh_token',
-	USER: 'user_data',
+const ENDPOINTS = {
+	LOGIN: (provider: string) =>
+		`${API_CONFIG.SERVICE_BASE_URL.USER}/authentication/${provider}/login`,
+	PRE_REGISTER: `${API_CONFIG.SERVICE_BASE_URL.USER}/authentication/triply/pre-register`,
+	VERIFY_OTP: `${API_CONFIG.SERVICE_BASE_URL.USER}/authentication/verify-otp`,
+	RESEND_OTP: `${API_CONFIG.SERVICE_BASE_URL.USER}/authentication/resend-otp`,
 }
 
 class AuthService {
@@ -29,12 +29,14 @@ class AuthService {
 			const loginRequest = {
 				credentials,
 			}
-			LoggerService.log(API_CONFIG.ENDPOINTS.AUTH.LOGIN('triply'))
+			LoggerService.log(ENDPOINTS.LOGIN('triply'))
 
 			const response: ApiResponse<LoginResponse> = await httpClient.post(
-				API_CONFIG.ENDPOINTS.AUTH.LOGIN('triply'),
+				ENDPOINTS.LOGIN('triply'),
 				loginRequest,
 			)
+
+			console.log('Login response:', response.data.token)
 
 			// Store tokens
 			await this.storeTokens(response.data.token)
@@ -52,10 +54,7 @@ class AuthService {
 	): Promise<PreRegisterResponse> {
 		try {
 			const response: ApiResponse<PreRegisterResponse> =
-				await httpClient.post(
-					API_CONFIG.ENDPOINTS.AUTH.PRE_REGISTER,
-					registerData,
-				)
+				await httpClient.post(ENDPOINTS.PRE_REGISTER, registerData)
 
 			return response.data
 		} catch (error) {
@@ -68,7 +67,7 @@ class AuthService {
 	async verifyOtp(otpData: VerifyOtpRequest): Promise<LoginResponse> {
 		try {
 			const response: ApiResponse<LoginResponse> = await httpClient.post(
-				API_CONFIG.ENDPOINTS.AUTH.VERIFY_OTP,
+				ENDPOINTS.VERIFY_OTP,
 				otpData,
 			)
 
@@ -88,10 +87,7 @@ class AuthService {
 			const resendData: ResendOtpRequest = { email }
 
 			const response: ApiResponse<ResendOtpResponse> =
-				await httpClient.post(
-					API_CONFIG.ENDPOINTS.AUTH.RESEND_OTP,
-					resendData,
-				)
+				await httpClient.post(ENDPOINTS.RESEND_OTP, resendData)
 
 			return response.data
 		} catch (error) {
@@ -100,28 +96,14 @@ class AuthService {
 		}
 	}
 
-	// Store tokens in AsyncStorage
+	// Store tokens using tokenManager
 	private async storeTokens(token: Token): Promise<void> {
-		try {
-			await AsyncStorage.multiSet([
-				[STORAGE_KEYS.TOKEN, JSON.stringify(token)],
-				[STORAGE_KEYS.REFRESH_TOKEN, token.refreshToken],
-			])
-		} catch (error) {
-			LoggerService.log('Error storing tokens:', error)
-			throw error
-		}
+		return tokenManager.storeTokens(token)
 	}
 
-	// Get stored token
+	// Get stored token using tokenManager
 	async getStoredToken(): Promise<Token | null> {
-		try {
-			const tokenData = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN)
-			return tokenData ? JSON.parse(tokenData) : null
-		} catch (error) {
-			LoggerService.log('Error getting stored token:', error)
-			return null
-		}
+		return tokenManager.getStoredToken()
 	}
 
 	// Check if user is authenticated
@@ -141,54 +123,24 @@ class AuthService {
 		}
 	}
 
-	// Logout
+	// Logout using tokenManager
 	async logout(): Promise<void> {
-		try {
-			await AsyncStorage.multiRemove([
-				STORAGE_KEYS.TOKEN,
-				STORAGE_KEYS.REFRESH_TOKEN,
-				STORAGE_KEYS.USER,
-			])
-		} catch (error) {
-			LoggerService.log('Error during logout:', error)
-			throw error
-		}
+		return tokenManager.clearTokens()
 	}
 
-	// Get authorization header
+	// Get authorization header using tokenManager
 	async getAuthHeader(): Promise<Record<string, string> | null> {
-		try {
-			const token = await this.getStoredToken()
-			if (!token) return null
-
-			return {
-				Authorization: `Bearer ${token.accessToken}`,
-			}
-		} catch (error) {
-			LoggerService.log('Error getting auth header:', error)
-			return null
-		}
+		return tokenManager.getAuthHeader()
 	}
 
-	// Store user data
-	async storeUserData(user: User): Promise<void> {
-		try {
-			await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
-		} catch (error) {
-			LoggerService.log('Error storing user data:', error)
-			throw error
-		}
+	// Refresh access token using tokenManager
+	async refreshToken(): Promise<boolean> {
+		return tokenManager.refreshToken()
 	}
 
-	// Get stored user data
-	async getStoredUserData(): Promise<User | null> {
-		try {
-			const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER)
-			return userData ? JSON.parse(userData) : null
-		} catch (error) {
-			LoggerService.log('Error getting stored user data:', error)
-			return null
-		}
+	// Handle 401 unauthorized using tokenManager
+	async handle401Unauthorized(): Promise<boolean> {
+		return tokenManager.handle401Unauthorized()
 	}
 }
 

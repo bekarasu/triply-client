@@ -1,6 +1,7 @@
-import { authService } from '@/services/auth-service'
+import { authService } from '@/services/auth/service'
 import { ApiError } from '@/services/http-client'
 import { LoggerService } from '@/services/logger'
+import { profileService } from '@/services/profile/service'
 import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import {
@@ -49,6 +50,10 @@ export default function LoginScreen() {
 		setLoading(true)
 		try {
 			await authService.login({ email, password })
+
+			const profile = await profileService.getInfo()
+			LoggerService.log('User profile fetched:', profile)
+			await profileService.storeData(profile)
 
 			// Navigate to main app
 			router.replace('/home' as any)

@@ -1,19 +1,20 @@
+import { authService } from '@/services/auth/service'
+import { profileService } from '@/services/profile/service'
+import { Profile } from '@/services/profile/types'
+import { useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import {
-	View,
-	Text,
-	StyleSheet,
-	SafeAreaView,
-	TouchableOpacity,
-	Alert,
 	ActivityIndicator,
+	Alert,
+	SafeAreaView,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
 } from 'react-native'
-import { useRouter } from 'expo-router'
-import { authService } from '@/services/auth-service'
-import { User } from '@/services/auth-types'
 
 export default function HomeScreen() {
-	const [user, setUser] = useState<User | null>(null)
+	const [profile, setProfile] = useState<Profile | null>(null)
 	const [loading, setLoading] = useState(true)
 	const router = useRouter()
 
@@ -23,8 +24,8 @@ export default function HomeScreen() {
 
 	const loadUserData = async () => {
 		try {
-			const userData = await authService.getStoredUserData()
-			setUser(userData)
+			const profileData = await profileService.getStoredData()
+			setProfile(profileData)
 		} catch (error) {
 			console.error('Error loading user data:', error)
 		} finally {
@@ -79,32 +80,22 @@ export default function HomeScreen() {
 			</View>
 
 			<View style={styles.content}>
-				<Text style={styles.title}>Welcome to Triply</Text>
-				{user ? (
-					<View style={styles.userInfo}>
-						<Text style={styles.welcomeText}>
-							Hello, {user.firstName} {user.lastName}!
-						</Text>
-						<Text style={styles.emailText}>{user.email}</Text>
-					</View>
+				{profile ? (
+					<Text style={styles.title}>Welcome {profile.name}!</Text>
 				) : (
-					<Text style={styles.subtitle}>
-						You are successfully logged in!
-					</Text>
+					<Text style={styles.subtitle}>Welcome</Text>
 				)}
 
-				<View style={styles.featuresContainer}>
-					<Text style={styles.featuresTitle}>Coming Soon:</Text>
-					<Text style={styles.featureItem}>
-						🗺️ Discover amazing places
+				<TouchableOpacity
+					style={styles.planTripButton}
+					onPress={() => {
+						router.push('/create-trip' as any)
+					}}
+				>
+					<Text style={styles.planTripButtonText}>
+						Plan Your Trip
 					</Text>
-					<Text style={styles.featureItem}>
-						✈️ Plan your perfect trip
-					</Text>
-					<Text style={styles.featureItem}>
-						🌟 Share your experiences
-					</Text>
-				</View>
+				</TouchableOpacity>
 			</View>
 		</SafeAreaView>
 	)
@@ -183,6 +174,28 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: '#666',
 		marginBottom: 8,
+		textAlign: 'center',
+	},
+	planTripButton: {
+		backgroundColor: '#007AFF',
+		paddingHorizontal: 32,
+		paddingVertical: 16,
+		borderRadius: 12,
+		marginTop: 32,
+		marginBottom: 20,
+		shadowColor: '#000',
+		shadowOffset: {
+			width: 0,
+			height: 2,
+		},
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	planTripButtonText: {
+		color: '#fff',
+		fontSize: 18,
+		fontWeight: '600',
 		textAlign: 'center',
 	},
 })
