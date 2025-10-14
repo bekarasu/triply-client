@@ -103,7 +103,7 @@ export default function LoginScreen() {
 								secureTextEntry={true}
 								autoCapitalize="none"
 								autoComplete="password"
-								textContentType="password"
+								textContentType="oneTimeCode"
 								autoCorrect={false}
 								blurOnSubmit={false}
 								returnKeyType="done"

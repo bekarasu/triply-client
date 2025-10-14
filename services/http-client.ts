@@ -171,6 +171,15 @@ class HttpClient {
 						this.isRefreshing = false
 					}
 				}
+
+				throw {
+					message:
+						errorData.error?.message ||
+						`HTTP Error: ${response.status}`,
+					code: errorData.error?.code || 'HTTP_ERROR',
+					status: response.status,
+					details: errorData,
+				} as ApiError
 			}
 
 			const data = await response.json()

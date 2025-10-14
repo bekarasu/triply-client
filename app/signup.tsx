@@ -178,7 +178,7 @@ export default function SignupScreen() {
 									secureTextEntry={true}
 									autoCapitalize="none"
 									autoComplete="password"
-									textContentType="password"
+									textContentType="oneTimeCode"
 									autoCorrect={false}
 									returnKeyType="next"
 									blurOnSubmit={false}
@@ -194,7 +194,7 @@ export default function SignupScreen() {
 									secureTextEntry={true}
 									autoCapitalize="none"
 									autoComplete="password"
-									textContentType="password"
+									textContentType="oneTimeCode"
 									autoCorrect={false}
 									returnKeyType="done"
 									onSubmitEditing={handleSignup}
