@@ -1,27 +1,57 @@
 import { cityService } from '@/services/city/service'
+import { recommendationService } from '@/services/recommendation/service'
+import { Criteria } from '@/services/recommendation/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import DateTimePicker from '@react-native-community/datetimepicker'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
-	ActivityIndicator,
+	Alert,
 	KeyboardAvoidingView,
 	Platform,
 	SafeAreaView,
 	ScrollView,
 	StyleSheet,
 	Text,
-	TextInput,
 	TouchableOpacity,
 	View,
 } from 'react-native'
+import CriteriaModal from '../components/CriteriaModal'
+import DestinationSearch from '../components/create-trip/DestinationSearch'
+import CreateTripPlanOverview from '../components/create-trip/PlanOverview'
+import PopularCities from '../components/create-trip/PopularCity'
+import { CityWithCriteria, useTripContext } from '../contexts/TripContext'
 import { City } from '../services/city/types'
+import { Logger } from '@/services/logger'
+
+interface CriteriaModalState {
+	visible: boolean
+	city: City | null
+}
 
 export default function CreateTripScreen() {
+	const {
+		selectedCities,
+		tripStartDate,
+		setTripStartDate,
+		addCity,
+		removeCity,
+		reorderCities,
+	} = useTripContext()
+
 	const [searchQuery, setSearchQuery] = useState('')
 	const [popularCities, setPopularCities] = useState<City[]>([])
 	const [searchResults, setSearchResults] = useState<City[]>([])
+	const [recommendationCriterias, setRecommendationCriterias] = useState<
+		Criteria[]
+	>([])
+	const [criteriaModal, setCriteriaModal] = useState<CriteriaModalState>({
+		visible: false,
+		city: null,
+	})
 	const [isSearching, setIsSearching] = useState(false)
 	const [hasSearched, setHasSearched] = useState(false)
+	const [tripDuration, setTripDuration] = useState<number | null>(0)
 	const router = useRouter()
 
 	const handleSearch = useCallback(async () => {
@@ -33,7 +63,6 @@ export default function CreateTripScreen() {
 					searchQuery.trim(),
 				)
 				setSearchResults(response.cities)
-				console.log('Search results:', response)
 			} catch (error) {
 				console.error('Error searching cities:', error)
 				setSearchResults([])
@@ -45,7 +74,21 @@ export default function CreateTripScreen() {
 
 	useEffect(() => {
 		loadPopularCities()
+		loadActivityOptions()
 	}, [])
+
+	const loadActivityOptions = async () => {
+		try {
+			const criterias =
+				await recommendationService.getRecommendationCriterias()
+
+			setRecommendationCriterias(criterias)
+		} catch (error) {
+			Logger.error('Error loading activity options:', error)
+			// Fallback to empty array or default activities
+			setRecommendationCriterias([])
+		}
+	}
 
 	useEffect(() => {
 		const delayedSearch = setTimeout(() => {
@@ -69,22 +112,101 @@ export default function CreateTripScreen() {
 		}
 	}
 
-	const handleCitySelect = async (city: City) => {
-		console.log('Selected city:', city)
-		try {
-			await AsyncStorage.setItem('selectedCityId', city.id.toString())
-			await AsyncStorage.setItem('selectedCityName', city.name)
-			console.log('selectedCountryId', city.countryId)
-			console.log({ city })
-			await AsyncStorage.setItem(
-				'selectedCountryId',
-				city.countryId.toString(),
-			)
-			await AsyncStorage.setItem('selectedCountryName', city.country.name)
+	const handleCitySelect = (city: City) => {
+		const isAlreadySelected = selectedCities.some(
+			(sc) => sc.city.id === city.id,
+		)
 
-			router.push('/trip-details')
+		if (isAlreadySelected) {
+			// Remove city from selection
+			removeCity(city.id)
+		} else {
+			// Open criteria modal for new city
+			setCriteriaModal({ visible: true, city })
+		}
+	}
+
+	const handleCitiesReorder = (reorderedCities: CityWithCriteria[]) => {
+		reorderCities(reorderedCities)
+	}
+
+	const addCityWithCriteria = (
+		city: City,
+		data: {
+			budget: string
+			duration: string
+			criterias: Criteria[]
+		},
+	) => {
+		const newCityWithCriteria: CityWithCriteria = {
+			city,
+			data,
+		}
+		addCity(newCityWithCriteria)
+		setCriteriaModal({ visible: false, city: null })
+		setSearchResults([])
+		setSearchQuery('')
+		setTripDuration(Number.parseInt(data.duration))
+	}
+
+	const handleFinalizeTripSelection = async () => {
+		if (!tripStartDate) {
+			Alert.alert(
+				'Missing Information',
+				'Please select your trip start date.',
+			)
+			return
+		}
+
+		if (selectedCities.length === 0) {
+			Alert.alert(
+				'No Cities Selected',
+				'Please select at least one city for your trip.',
+			)
+			return
+		}
+
+		try {
+			const primaryCity = selectedCities[0].city
+			const createTripData = {
+				tripStartDate: formatDateForStorage(tripStartDate),
+				selectedCitiesWithCriteria: selectedCities,
+				selectedCityId: primaryCity.id.toString(),
+				selectedCityName: primaryCity.name,
+				selectedCountryId: primaryCity.countryId.toString(),
+				selectedCountryName: primaryCity.country.name,
+			}
+
+			await AsyncStorage.setItem(
+				'createTripData',
+				JSON.stringify(createTripData),
+			)
+
+			Alert.alert(
+				'Work in Progress',
+				'Trip details screen is under development.',
+			)
 		} catch (error) {
-			console.error('Error storing city data:', error)
+			Logger.error('Error storing cities data:', error)
+		}
+	}
+
+	const formatDateForDisplay = (date: Date | null): string => {
+		if (!date) return 'Select date'
+		return date.toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+		})
+	}
+
+	const formatDateForStorage = (date: Date): string => {
+		return date.toISOString().split('T')[0] // YYYY-MM-DD format
+	}
+
+	const handleStartDateChange = (event: any, selectedDate?: Date) => {
+		if (selectedDate) {
+			setTripStartDate(selectedDate)
 		}
 	}
 
@@ -114,110 +236,79 @@ export default function CreateTripScreen() {
 					style={styles.content}
 					showsVerticalScrollIndicator={false}
 				>
-					{/* Main Title */}
-					<Text style={styles.title}>
-						Where do you want to start your journey?
-					</Text>
-					<Text style={styles.subtitle}>
-						Search for destinations, cities, or attractions
-					</Text>
-
-					{/* Search Box */}
-					<View style={styles.searchContainer}>
-						<TextInput
-							style={styles.searchInput}
-							placeholder="Search destinations..."
-							placeholderTextColor="#999"
-							value={searchQuery}
-							onChangeText={setSearchQuery}
-							onSubmitEditing={handleSearch}
-							autoCapitalize="words"
-							returnKeyType="search"
-						/>
-						<TouchableOpacity
-							style={styles.searchButton}
-							onPress={handleSearch}
-						>
-							<Text style={styles.searchButtonText}>🔍</Text>
-						</TouchableOpacity>
-					</View>
-
-					{/* Recent Searches */}
-					{(hasSearched || searchQuery) && (
-						<View style={styles.searchResults}>
-							{isSearching ? (
-								<View style={styles.loadingContainer}>
-									<ActivityIndicator
-										size="small"
-										color="#007AFF"
-									/>
-									<Text style={styles.loadingText}>
-										Searching...
-									</Text>
-								</View>
-							) : searchResults.length > 0 ? (
-								<View style={styles.resultsGrid}>
-									{searchResults.map((city) => (
-										<TouchableOpacity
-											key={city.id}
-											style={styles.resultCard}
-											onPress={() =>
-												handleCitySelect(city)
-											}
-										>
-											<Text style={styles.cityName}>
-												{city.name}
-											</Text>
-											<Text style={styles.countryName}>
-												{city.country.name}
-											</Text>
-											<Text style={styles.population}>
-												Population:{' '}
-												{city.population.toLocaleString()}
-											</Text>
-										</TouchableOpacity>
-									))}
-								</View>
-							) : hasSearched ? (
-								<Text style={styles.noResults}>
-									No cities found for &quot;{searchQuery}
-									&quot;
-								</Text>
-							) : null}
-						</View>
+					{selectedCities.length === 0 && (
+						<>
+							{/* Main Title */}
+							<Text style={styles.title}>
+								Where do you want to start your journey?
+							</Text>
+							<Text style={styles.subtitle}>
+								First, let&apos;s set your travel dates, then
+								choose your destinations
+							</Text>
+						</>
 					)}
 
-					{/* Popular Destinations */}
-					{popularCities.length > 0 &&
-						((!isSearching &&
-							!hasSearched &&
-							searchQuery.trim().length === 0) ||
-							searchResults?.length === 0) && (
-							<View style={styles.popularSection}>
-								<Text style={styles.sectionTitle}>
-									Popular Destinations
-								</Text>
-								<View style={styles.destinationGrid}>
-									{popularCities.map((city) => (
-										<TouchableOpacity
-											key={city.id}
-											style={styles.destinationCard}
-											onPress={() =>
-												handleCitySelect(city)
-											}
-										>
-											<Text
-												style={styles.destinationText}
-											>
-												{`${city.name}, ${city.country.iso2}`}
-											</Text>
-										</TouchableOpacity>
-									))}
-								</View>
+					{/* Trip Dates Section */}
+					<View style={styles.tripDatesSection}>
+						<Text style={styles.sectionTitle}>Trip Start Date</Text>
+						<View style={styles.dateInputsContainer}>
+							<View style={styles.dateInputGroup}>
+								<DateTimePicker
+									value={tripStartDate}
+									mode="date"
+									display="default"
+									onChange={handleStartDateChange}
+									minimumDate={new Date()}
+								/>
 							</View>
-						)}
+						</View>
+					</View>
+
+					{/* Destination Search */}
+					<DestinationSearch
+						searchQuery={searchQuery}
+						onSearchQueryChange={setSearchQuery}
+						onSearch={handleSearch}
+						hasSearched={hasSearched}
+						isSearching={isSearching}
+						searchResults={searchResults}
+						selectedCities={selectedCities}
+						onCitySelect={handleCitySelect}
+					/>
+
+					{/* Popular Destinations */}
+					<PopularCities
+						popularCities={popularCities}
+						selectedCities={selectedCities}
+						isSearching={isSearching}
+						hasSearched={hasSearched}
+						searchQuery={searchQuery}
+						searchResults={searchResults}
+						onCitySelect={handleCitySelect}
+					/>
+
+					{/* Trip plan overview */}
+					<CreateTripPlanOverview
+						selectedCities={selectedCities}
+						tripStartDate={tripStartDate}
+						tripDuration={tripDuration}
+						onCitySelect={handleCitySelect}
+						onFinalizeTripSelection={handleFinalizeTripSelection}
+						formatDateForDisplay={formatDateForDisplay}
+						onCitiesReorder={handleCitiesReorder}
+					/>
 				</ScrollView>
 			</KeyboardAvoidingView>
+
+			{/* Criteria Modal - Isolated outside of other containers */}
+			<CriteriaModal
+				visible={criteriaModal.visible}
+				city={criteriaModal.city}
+				criterias={recommendationCriterias}
+				onClose={() => setCriteriaModal({ visible: false, city: null })}
+				onSubmit={addCityWithCriteria}
+			/>
 		</SafeAreaView>
 	)
 }

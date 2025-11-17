@@ -132,9 +132,15 @@ export class TokenManager {
 				return true
 			}
 
-			LoggerService.log(
-				'Token refresh failed - clearing tokens and redirecting',
-			)
+			// Clear trip data from memory before clearing tokens
+			try {
+				const { clearTripDataGlobally } = await import(
+					'../../contexts/TripContext'
+				)
+				clearTripDataGlobally()
+			} catch (tripClearError) {
+				Logger.error('Error clearing trip data on 401:', tripClearError)
+			}
 
 			await this.clearTokens()
 			router.replace('/login')
@@ -143,6 +149,19 @@ export class TokenManager {
 			Logger.error('Error handling 401 unauthorized:', error)
 
 			try {
+				// Clear trip data from memory before clearing tokens
+				try {
+					const { clearTripDataGlobally } = await import(
+						'../../contexts/TripContext'
+					)
+					clearTripDataGlobally()
+				} catch (tripClearError) {
+					Logger.error(
+						'Error clearing trip data on fallback:',
+						tripClearError,
+					)
+				}
+
 				await this.clearTokens()
 				router.replace('/login')
 			} catch (fallbackError) {

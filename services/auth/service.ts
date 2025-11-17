@@ -111,22 +111,28 @@ class AuthService {
 		}
 	}
 
-	// Logout using tokenManager
 	async logout(): Promise<void> {
+		try {
+			// Clear trip data from memory
+			const { clearTripDataGlobally } = await import(
+				'../../contexts/TripContext'
+			)
+			clearTripDataGlobally()
+		} catch (error) {
+			Logger.error('Error clearing trip data on logout:', error)
+		}
+
 		return tokenManager.clearTokens()
 	}
 
-	// Get authorization header using tokenManager
 	async getAuthHeader(): Promise<Record<string, string> | null> {
 		return tokenManager.getAuthHeader()
 	}
 
-	// Refresh access token using tokenManager
 	async refreshToken(): Promise<boolean> {
 		return tokenManager.refreshToken()
 	}
 
-	// Handle 401 unauthorized using tokenManager
 	async handle401Unauthorized(): Promise<boolean> {
 		return tokenManager.handle401Unauthorized()
 	}

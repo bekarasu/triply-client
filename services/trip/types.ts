@@ -1,4 +1,4 @@
-import { Recommendation, RecommendationCriteria } from '../recommendation/types'
+import { Criteria, Recommendation } from '../recommendation/types'
 
 export interface Trip {
 	id: number
@@ -17,6 +17,6 @@ export interface CreateTripRequest {
 }
 
 export interface GetRecommendationCriteriaResponse {
-	criteria: RecommendationCriteria[]
+	criteria: Criteria[]
 	total: number
 }

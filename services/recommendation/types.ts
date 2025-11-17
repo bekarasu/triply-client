@@ -1,4 +1,4 @@
-export interface RecommendationCriteria {
+export interface Criteria {
 	id: number
 	name: string
 	description: string
@@ -6,16 +6,11 @@ export interface RecommendationCriteria {
 	category: string
 }
 
-export interface Recommendation {
-	criteriaId: number
-	priority: 'high' | 'medium' | 'low'
-}
-
 export interface Trip {
 	id: number
 	cityId: number
 	cityName: string
-	recommendations: Recommendation[]
+	criterias: Criteria[]
 	additionalCityIds: number[]
 	createdAt: string
 	updatedAt: string
