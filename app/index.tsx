@@ -2,7 +2,13 @@ import { authService } from '@/services/auth/service'
 import { isOnboardingCompleted } from '@/utils/onboarding'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import {
+	ActivityIndicator,
+	SafeAreaView,
+	StyleSheet,
+	Text,
+	View,
+} from 'react-native'
 
 export default function Index() {
 	const router = useRouter()
@@ -38,9 +44,22 @@ export default function Index() {
 
 	if (isLoading) {
 		return (
-			<View style={styles.container}>
-				<Text style={styles.loadingText}>Loading...</Text>
-			</View>
+			<SafeAreaView style={styles.container}>
+				<View style={styles.content}>
+					<View style={styles.logoContainer}>
+						<Text style={styles.logo}>✈️</Text>
+					</View>
+					<Text style={styles.appName}>Triply</Text>
+					<ActivityIndicator
+						size="large"
+						color="#6366f1"
+						style={styles.loader}
+					/>
+					<Text style={styles.loadingText}>
+						Preparing your journey...
+					</Text>
+				</View>
+			</SafeAreaView>
 		)
 	}
 
@@ -50,12 +69,45 @@ export default function Index() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		backgroundColor: '#f8f9fa',
+	},
+	content: {
+		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
-		backgroundColor: '#fff',
+		paddingHorizontal: 24,
+	},
+	logoContainer: {
+		width: 100,
+		height: 100,
+		borderRadius: 50,
+		backgroundColor: '#6366f1',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginBottom: 24,
+		shadowColor: '#6366f1',
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.3,
+		shadowRadius: 16,
+		elevation: 8,
+	},
+	logo: {
+		fontSize: 48,
+	},
+	appName: {
+		fontSize: 48,
+		fontWeight: '800',
+		color: '#1f2937',
+		marginBottom: 48,
+		letterSpacing: -1,
+	},
+	loader: {
+		marginBottom: 20,
 	},
 	loadingText: {
-		fontSize: 16,
-		color: '#666',
+		fontSize: 18,
+		color: '#6b7280',
+		fontWeight: '500',
+		textAlign: 'center',
 	},
 })
