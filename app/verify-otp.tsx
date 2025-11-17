@@ -1,6 +1,6 @@
 import { authService } from '@/services/auth/service'
 import { ApiError } from '@/services/http-client'
-import { LoggerService } from '@/services/logger'
+import { Logger } from '@/services/logger'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
 import {
@@ -72,7 +72,7 @@ export default function VerifyOtpScreen() {
 
 			router.replace('/home' as any)
 		} catch (error: any) {
-			LoggerService.log('OTP verification error:', error)
+			Logger.error('OTP verification error:', error)
 			const apiError = error as ApiError
 			Alert.alert(
 				'Verification Failed',

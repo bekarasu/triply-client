@@ -1,7 +1,7 @@
 import { API_CONFIG } from '../api-config'
 import { authService } from '../auth/service'
 import { ApiResponse, httpClient } from '../http-client'
-import { LoggerService } from '../logger'
+import { Logger } from '../logger'
 import { City, SearchCitiesResponse } from './types'
 
 const ENDPOINTS = {
@@ -21,10 +21,9 @@ class CityService {
 				ENDPOINTS.POPULAR_CITIES,
 				authHeader,
 			)
-			console.log('Popular cities response:', response.data)
 			return response.data
 		} catch (error) {
-			LoggerService.log('Popular cities error:', error)
+			Logger.error('Popular cities error:', error)
 			throw error
 		}
 	}
@@ -37,10 +36,9 @@ class CityService {
 			const response: ApiResponse<SearchCitiesResponse> =
 				await httpClient.get(ENDPOINTS.SEARCH_CITIES(query), authHeader)
 
-			LoggerService.log('Search cities response:', response.data)
 			return response.data
 		} catch (error) {
-			LoggerService.log('Search cities error:', error)
+			Logger.error('Search cities error:', error)
 			throw error
 		}
 	}

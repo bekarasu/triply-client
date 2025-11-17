@@ -1,3 +1,5 @@
+import { Logger } from '@/services/logger'
+import { useRouter } from 'expo-router'
 import React from 'react'
 import {
 	View,
@@ -21,7 +23,7 @@ export default function OnboardingTwo() {
 			await markOnboardingCompleted()
 			router.replace('/login' as any)
 		} catch (error) {
-			LoggerService.error('Error completing onboarding:', error)
+			Logger.error('Error completing onboarding:', error)
 			router.replace('/login' as any)
 		}
 	}

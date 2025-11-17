@@ -2,7 +2,7 @@ import { API_CONFIG } from '../api-config'
 import { authService } from '../auth/service'
 import { City } from '../city/types'
 import { ApiResponse, httpClient } from '../http-client'
-import { LoggerService } from '../logger'
+import { Logger } from '../logger'
 import { CreateTripRequest, Trip } from './types'
 
 const ENDPOINTS = {
@@ -25,9 +25,7 @@ class TripService {
 				countryId === 'undefined' ||
 				countryId === 'null'
 			) {
-				LoggerService.log(
-					'Invalid countryId provided, returning mock data',
-				)
+				Logger.error('Invalid countryId provided, returning mock data')
 				return []
 			}
 
@@ -63,7 +61,7 @@ class TripService {
 
 			return validCities
 		} catch (error) {
-			LoggerService.log('Additional cities error:', error)
+			Logger.error('Additional cities error:', error)
 			return []
 		}
 	}
@@ -79,10 +77,9 @@ class TripService {
 				authHeader,
 			)
 
-			LoggerService.log('Create trip response:', response.data)
 			return response.data
 		} catch (error) {
-			LoggerService.log('Create trip error:', error)
+			Logger.error('Create trip error:', error)
 			throw error
 		}
 	}

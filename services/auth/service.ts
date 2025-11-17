@@ -1,7 +1,7 @@
 // Authentication Service
 import { API_CONFIG } from '../api-config'
 import { ApiResponse, httpClient } from '../http-client'
-import { LoggerService } from '../logger'
+import { Logger } from '../logger'
 import { tokenManager } from './token-manager'
 import {
 	LoginCredentials,
@@ -23,32 +23,27 @@ const ENDPOINTS = {
 }
 
 class AuthService {
-	// Login
 	async login(credentials: LoginCredentials): Promise<LoginResponse> {
 		try {
 			const loginRequest = {
 				credentials,
 			}
-			LoggerService.log(ENDPOINTS.LOGIN('triply'))
 
 			const response: ApiResponse<LoginResponse> = await httpClient.post(
 				ENDPOINTS.LOGIN('triply'),
 				loginRequest,
 			)
 
-			console.log('Login response:', response.data.token)
-
 			// Store tokens
 			await this.storeTokens(response.data.token)
 
 			return response.data
 		} catch (error) {
-			LoggerService.log('Login error:', error)
+			Logger.error('Login error:', error)
 			throw error
 		}
 	}
 
-	// Pre-register (send OTP)
 	async preRegister(
 		registerData: PreRegisterRequest,
 	): Promise<PreRegisterResponse> {
@@ -58,12 +53,11 @@ class AuthService {
 
 			return response.data
 		} catch (error) {
-			LoggerService.log('Pre-register error:', error)
+			Logger.error('Pre-register error:', error)
 			throw error
 		}
 	}
 
-	// Verify OTP and complete registration
 	async verifyOtp(otpData: VerifyOtpRequest): Promise<LoginResponse> {
 		try {
 			const response: ApiResponse<LoginResponse> = await httpClient.post(
@@ -71,17 +65,15 @@ class AuthService {
 				otpData,
 			)
 
-			// Store tokens after successful verification
 			await this.storeTokens(response.data.token)
 
 			return response.data
 		} catch (error) {
-			LoggerService.log('Verify OTP error:', error)
+			Logger.error('Verify OTP error:', error)
 			throw error
 		}
 	}
 
-	// Resend OTP
 	async resendOtp(email: string): Promise<ResendOtpResponse> {
 		try {
 			const resendData: ResendOtpRequest = { email }
@@ -91,34 +83,30 @@ class AuthService {
 
 			return response.data
 		} catch (error) {
-			LoggerService.log('Resend OTP error:', error)
+			Logger.error('Resend OTP error:', error)
 			throw error
 		}
 	}
 
-	// Store tokens using tokenManager
 	private async storeTokens(token: Token): Promise<void> {
 		return tokenManager.storeTokens(token)
 	}
 
-	// Get stored token using tokenManager
 	async getStoredToken(): Promise<Token | null> {
 		return tokenManager.getStoredToken()
 	}
 
-	// Check if user is authenticated
 	async isAuthenticated(): Promise<boolean> {
 		try {
 			const token = await this.getStoredToken()
 			if (!token) return false
 
-			// Check if token is expired
 			const now = Date.now() / 1000
 			const expirationTime = now + token.expiresIn
 
 			return expirationTime > now
 		} catch (error) {
-			LoggerService.log('Error checking authentication:', error)
+			Logger.error('Error checking authentication:', error)
 			return false
 		}
 	}

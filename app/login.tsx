@@ -26,16 +26,10 @@ export default function LoginScreen() {
 	const router = useRouter()
 
 	const handlePasswordChange = (text: string) => {
-		LoggerService.log('Password changed, length:', text.length)
 		setPassword(text)
 	}
 
 	const handleLogin = async () => {
-		LoggerService.log('Login attempt with:', {
-			email,
-			password: password.length > 0 ? '***' : 'EMPTY',
-		})
-
 		if (!email || !password) {
 			Alert.alert('Error', 'Please fill in all fields')
 			return
@@ -52,7 +46,6 @@ export default function LoginScreen() {
 			await authService.login({ email, password })
 
 			const profile = await profileService.getInfo()
-			LoggerService.log('User profile fetched:', profile)
 			await profileService.storeData(profile)
 
 			// Navigate to main app

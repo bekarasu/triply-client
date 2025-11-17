@@ -29,12 +29,7 @@ class RecommendationService {
 			)
 			return response.data
 		} catch (error) {
-			LoggerService.error('Recommendation criteria error:', error)
-			Alert.alert(
-				'Error',
-				'Failed to fetch recommendation criterias.',
-			)
-			return null
+			Logger.error('Recommendation criteria error:', error)
 		}
 	}
 }

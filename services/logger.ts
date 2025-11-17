@@ -1,6 +1,6 @@
 import { isProduction } from '@/utils/env-config'
 
-export class LoggerService {
+export class Logger {
 	static log(message: string, ...optionalParams: any[]) {
 		console.log(message, ...optionalParams)
 	}

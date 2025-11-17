@@ -2,7 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 import { API_CONFIG } from '../api-config'
-import { LoggerService } from '../logger'
+import { Logger } from '../logger'
 import { RefreshTokenRequest, RefreshTokenResponse, Token } from './types'
 
 // Storage keys
@@ -24,7 +24,7 @@ export class TokenManager {
 			const tokenData = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN)
 			return tokenData ? JSON.parse(tokenData) : null
 		} catch (error) {
-			LoggerService.log('Error getting stored token:', error)
+			Logger.error('Error getting stored token:', error)
 			return null
 		}
 	}
@@ -36,7 +36,7 @@ export class TokenManager {
 				[STORAGE_KEYS.REFRESH_TOKEN, token.refreshToken],
 			])
 		} catch (error) {
-			LoggerService.log('Error storing tokens:', error)
+			Logger.error('Error storing tokens:', error)
 			throw error
 		}
 	}
@@ -50,7 +50,7 @@ export class TokenManager {
 				'X-Access-Token': `${token.accessToken}`,
 			}
 		} catch (error) {
-			LoggerService.log('Error getting auth header:', error)
+			Logger.error('Error getting auth header:', error)
 			return null
 		}
 	}
@@ -58,7 +58,7 @@ export class TokenManager {
 	async refreshToken(): Promise<boolean> {
 		// If there's already a refresh in progress, return that promise
 		if (this.refreshPromise) {
-			LoggerService.log(
+			Logger.log(
 				'Token refresh already in progress, waiting for existing request',
 			)
 			return this.refreshPromise
@@ -80,15 +80,12 @@ export class TokenManager {
 		try {
 			const storedToken = await this.getStoredToken()
 			if (!storedToken?.refreshToken) {
-				LoggerService.log('No refresh token available')
 				return false
 			}
 
 			const refreshRequest: RefreshTokenRequest = {
 				refreshToken: storedToken.refreshToken,
 			}
-
-			LoggerService.log('Attempting to refresh token')
 
 			const response = await fetch(ENDPOINTS.REFRESH_TOKEN, {
 				method: 'POST',
@@ -99,10 +96,6 @@ export class TokenManager {
 			})
 
 			if (!response.ok) {
-				LoggerService.log(
-					'Token refresh failed with status:',
-					response.status,
-				)
 				return false
 			}
 
@@ -110,11 +103,10 @@ export class TokenManager {
 			const refreshResponse: RefreshTokenResponse = data.data
 
 			await this.storeTokens(refreshResponse.token)
-			LoggerService.log('Token refreshed successfully')
 
 			return true
 		} catch (error) {
-			LoggerService.log('Token refresh failed:', error)
+			Logger.error('Token refresh failed:', error)
 			return false
 		}
 	}
@@ -127,21 +119,16 @@ export class TokenManager {
 				STORAGE_KEYS.USER,
 			])
 		} catch (error) {
-			LoggerService.log('Error clearing tokens:', error)
+			Logger.error('Error clearing tokens:', error)
 			throw error
 		}
 	}
 
 	async handle401Unauthorized(): Promise<boolean> {
 		try {
-			LoggerService.log(
-				'Handling 401 unauthorized - attempting token refresh',
-			)
-
 			const refreshSuccessful = await this.refreshToken()
 
 			if (refreshSuccessful) {
-				LoggerService.log('Token refresh successful')
 				return true
 			}
 
@@ -153,16 +140,13 @@ export class TokenManager {
 			router.replace('/login')
 			return false
 		} catch (error) {
-			LoggerService.log('Error handling 401 unauthorized:', error)
+			Logger.error('Error handling 401 unauthorized:', error)
 
 			try {
 				await this.clearTokens()
 				router.replace('/login')
 			} catch (fallbackError) {
-				LoggerService.log(
-					'Error in fallback clear/redirect:',
-					fallbackError,
-				)
+				Logger.error('Error in fallback clear/redirect:', fallbackError)
 			}
 			return false
 		}

@@ -1,3 +1,4 @@
+import { Logger } from '@/services/logger'
 import React from 'react'
 import {
 	View,
@@ -21,7 +22,7 @@ export default function OnboardingThree() {
 			await markOnboardingCompleted()
 			router.replace('/login' as any)
 		} catch (error) {
-			LoggerService.error('Error completing onboarding:', error)
+			Logger.error('Error completing onboarding:', error)
 			router.replace('/login' as any)
 		}
 	}
@@ -31,7 +32,7 @@ export default function OnboardingThree() {
 			await markOnboardingCompleted()
 			router.replace('/login' as any)
 		} catch (error) {
-			LoggerService.error('Error completing onboarding:', error)
+			Logger.error('Error completing onboarding:', error)
 			router.replace('/login' as any)
 		}
 	}
