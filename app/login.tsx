@@ -1,6 +1,5 @@
 import { authService } from '@/services/auth/service'
 import { ApiError } from '@/services/http-client'
-import { LoggerService } from '@/services/logger'
 import { profileService } from '@/services/profile/service'
 import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
@@ -69,8 +68,16 @@ export default function LoginScreen() {
 			>
 				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 					<View style={styles.content}>
-						<Text style={styles.title}>Welcome to Triply</Text>
-						<Text style={styles.subtitle}>Sign in to continue</Text>
+						<View style={styles.headerSection}>
+							<View style={styles.logoContainer}>
+								<Text style={styles.logoText}>✈️</Text>
+							</View>
+							<Text style={styles.title}>Welcome to Triply</Text>
+							<Text style={styles.subtitle}>
+								Sign in to start planning your amazing
+								adventures
+							</Text>
+						</View>
 
 						<View style={styles.inputContainer}>
 							<TextInput
@@ -147,54 +154,91 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: '#fff',
+		backgroundColor: '#f8f9fa',
 	},
 	keyboardView: {
 		flex: 1,
 	},
 	content: {
 		flex: 1,
-		padding: 20,
+		paddingHorizontal: 24,
 		justifyContent: 'center',
 	},
+	headerSection: {
+		alignItems: 'center',
+		marginBottom: 48,
+	},
+	logoContainer: {
+		width: 80,
+		height: 80,
+		borderRadius: 40,
+		backgroundColor: '#6366f1',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginBottom: 24,
+		shadowColor: '#6366f1',
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.3,
+		shadowRadius: 16,
+		elevation: 8,
+	},
+	logoText: {
+		fontSize: 36,
+	},
 	title: {
-		fontSize: 32,
-		fontWeight: 'bold',
+		fontSize: 36,
+		fontWeight: '800',
 		textAlign: 'center',
-		marginBottom: 8,
-		color: '#333',
+		marginBottom: 12,
+		color: '#1f2937',
+		letterSpacing: -0.5,
 	},
 	subtitle: {
-		fontSize: 16,
+		fontSize: 18,
 		textAlign: 'center',
 		marginBottom: 40,
-		color: '#666',
+		color: '#6b7280',
+		lineHeight: 26,
+		paddingHorizontal: 16,
 	},
 	inputContainer: {
-		marginBottom: 16,
+		marginBottom: 20,
 	},
 	input: {
 		borderWidth: 1,
-		borderColor: '#ddd',
-		borderRadius: 8,
-		padding: 16,
+		borderColor: '#f1f5f9',
+		borderRadius: 16,
+		paddingHorizontal: 20,
+		paddingVertical: 18,
 		fontSize: 16,
-		backgroundColor: '#f9f9f9',
+		backgroundColor: '#fff',
+		color: '#1f2937',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.05,
+		shadowRadius: 8,
+		elevation: 2,
 	},
 	loginButton: {
-		backgroundColor: '#007AFF',
-		borderRadius: 8,
-		padding: 16,
-		marginTop: 8,
-		marginBottom: 16,
+		backgroundColor: '#6366f1',
+		borderRadius: 16,
+		paddingVertical: 18,
+		marginTop: 12,
+		marginBottom: 24,
+		shadowColor: '#6366f1',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 4,
 	},
 	loginButtonDisabled: {
-		backgroundColor: '#ccc',
+		backgroundColor: '#d1d5db',
+		shadowOpacity: 0.1,
 	},
 	loginButtonText: {
 		color: '#fff',
-		fontSize: 16,
-		fontWeight: '600',
+		fontSize: 18,
+		fontWeight: '700',
 		textAlign: 'center',
 	},
 	forgotPassword: {
@@ -209,14 +253,15 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
+		marginTop: 20,
 	},
 	signupText: {
-		color: '#666',
-		fontSize: 14,
+		color: '#6b7280',
+		fontSize: 16,
 	},
 	signupLink: {
-		color: '#007AFF',
-		fontSize: 14,
-		fontWeight: '600',
+		color: '#6366f1',
+		fontSize: 16,
+		fontWeight: '700',
 	},
 })
