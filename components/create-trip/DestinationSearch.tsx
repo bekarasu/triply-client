@@ -12,8 +12,8 @@ import {
 interface CityWithCriteria {
 	city: City
 	data: {
-		budget: string
-		duration: string
+		budget: number
+		duration: number
 		criterias: any[]
 	}
 }

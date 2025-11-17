@@ -3,7 +3,7 @@ import { authService } from '../auth/service'
 import { City } from '../city/types'
 import { ApiResponse, httpClient } from '../http-client'
 import { Logger } from '../logger'
-import { CreateTripRequest, Trip } from './types'
+import { CreateTripRequest, CreateTripResponse } from './types'
 
 const ENDPOINTS = {
 	ADDITIONAL_CITIES: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/cities/country/:id`,
@@ -66,16 +66,18 @@ class TripService {
 		}
 	}
 
-	async createTrip(request: CreateTripRequest): Promise<Trip> {
+	async createTrip(request: CreateTripRequest): Promise<CreateTripResponse> {
 		try {
 			const authHeader = await authService.getAuthHeader()
 			if (!authHeader) throw new Error('No auth token found')
 
-			const response: ApiResponse<Trip> = await httpClient.post(
-				ENDPOINTS.CREATE_TRIP,
-				request,
-				authHeader,
-			)
+			const response: ApiResponse<CreateTripResponse> =
+				await httpClient.post(
+					ENDPOINTS.CREATE_TRIP,
+					request,
+					authHeader,
+					300 * 1000, // 5 minutes timeout
+				)
 
 			return response.data
 		} catch (error) {

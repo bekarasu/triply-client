@@ -80,6 +80,7 @@ class HttpClient {
 	private async request<T>(
 		url: string,
 		options: RequestInit = {},
+		timeout: number = this.timeout,
 	): Promise<ApiResponse<T>> {
 		// Get auth header if available
 		const authHeader = await tokenManager.getAuthHeader()
@@ -95,7 +96,7 @@ class HttpClient {
 
 		// Add timeout
 		const controller = new AbortController()
-		const timeoutId = setTimeout(() => controller.abort(), this.timeout)
+		const timeoutId = setTimeout(() => controller.abort(), timeout)
 		config.signal = controller.signal
 
 		try {
@@ -220,12 +221,17 @@ class HttpClient {
 		endpoint: string,
 		body?: any,
 		headers?: Record<string, string>,
+		timeout: number = this.timeout,
 	): Promise<ApiResponse<T>> {
-		return this.request<T>(endpoint, {
-			method: 'POST',
-			body: body ? JSON.stringify(body) : undefined,
-			headers,
-		})
+		return this.request<T>(
+			endpoint,
+			{
+				method: 'POST',
+				body: body ? JSON.stringify(body) : undefined,
+				headers,
+			},
+			timeout,
+		)
 	}
 
 	async put<T>(

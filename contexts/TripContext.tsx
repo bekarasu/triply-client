@@ -6,8 +6,8 @@ import { Criteria } from '../services/recommendation/types'
 export interface CityWithCriteria {
 	city: City
 	data: {
-		budget: string
-		duration: string
+		budget: number
+		duration: number
 		criterias: Criteria[]
 	}
 }

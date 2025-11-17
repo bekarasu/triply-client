@@ -1,22 +1,15 @@
-import { Criteria, Recommendation } from '../recommendation/types'
-
-export interface Trip {
-	id: number
+export interface CreateTripCity {
 	cityId: number
-	cityName: string
-	recommendations: Recommendation[]
-	additionalCityIds: number[]
-	createdAt: string
-	updatedAt: string
+	budget: number
+	duration: number
+	criteriaIds: number[]
 }
 
 export interface CreateTripRequest {
-	cityId: number
-	recommendations: Recommendation[]
-	additionalCityIds?: number[]
+	startDate: Date
+	destinations: CreateTripCity[]
 }
 
-export interface GetRecommendationCriteriaResponse {
-	criteria: Criteria[]
-	total: number
+export interface CreateTripResponse {
+	tripId: string
 }

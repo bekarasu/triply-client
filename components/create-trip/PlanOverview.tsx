@@ -13,8 +13,8 @@ import Animated, {
 interface CityWithCriteria {
 	city: City
 	data: {
-		budget: string
-		duration: string
+		budget: number
+		duration: number
 		criterias: Criteria[]
 	}
 }
@@ -28,7 +28,7 @@ interface CreateTripPlanOverviewProps {
 	formatDateForDisplay: (date: Date | null) => string
 	onCitiesReorder: (reorderedCities: CityWithCriteria[]) => void
 }
-	
+
 export default function CreateTripPlanOverview({
 	selectedCities,
 	tripStartDate,
@@ -181,9 +181,7 @@ export default function CreateTripPlanOverview({
 					Total budget:{' '}
 					{selectedCities
 						.reduce((total, cityWithCriteria) => {
-							const budget = parseFloat(
-								cityWithCriteria.data.budget,
-							)
+							const budget = cityWithCriteria.data.budget
 							return total + (isNaN(budget) ? 0 : budget)
 						}, 0)
 						.toLocaleString(undefined, {

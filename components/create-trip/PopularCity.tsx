@@ -5,8 +5,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 interface CityWithCriteria {
 	city: City
 	data: {
-		budget: string
-		duration: string
+		budget: number
+		duration: number
 		criterias: any[]
 	}
 }

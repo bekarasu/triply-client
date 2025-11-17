@@ -1,4 +1,5 @@
 import { cityService } from '@/services/city/service'
+import { Logger } from '@/services/logger'
 import { recommendationService } from '@/services/recommendation/service'
 import { Criteria } from '@/services/recommendation/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -22,7 +23,6 @@ import CreateTripPlanOverview from '../components/create-trip/PlanOverview'
 import PopularCities from '../components/create-trip/PopularCity'
 import { CityWithCriteria, useTripContext } from '../contexts/TripContext'
 import { City } from '../services/city/types'
-import { Logger } from '@/services/logger'
 
 interface CriteriaModalState {
 	visible: boolean
@@ -140,7 +140,11 @@ export default function CreateTripScreen() {
 	) => {
 		const newCityWithCriteria: CityWithCriteria = {
 			city,
-			data,
+			data: {
+				budget: parseFloat(data.budget) || 0,
+				duration: parseInt(data.duration) || 1,
+				criterias: data.criterias,
+			},
 		}
 		addCity(newCityWithCriteria)
 		setCriteriaModal({ visible: false, city: null })
@@ -168,7 +172,7 @@ export default function CreateTripScreen() {
 
 		try {
 			const primaryCity = selectedCities[0].city
-			const createTripData = {
+			const storageData = {
 				tripStartDate: formatDateForStorage(tripStartDate),
 				selectedCitiesWithCriteria: selectedCities,
 				selectedCityId: primaryCity.id.toString(),
@@ -179,15 +183,14 @@ export default function CreateTripScreen() {
 
 			await AsyncStorage.setItem(
 				'createTripData',
-				JSON.stringify(createTripData),
+				JSON.stringify(storageData),
 			)
 
-			Alert.alert(
-				'Work in Progress',
-				'Trip details screen is under development.',
-			)
+			// Navigate to loading screen which will handle the trip creation
+			router.push('/trip-loading')
 		} catch (error) {
 			Logger.error('Error storing cities data:', error)
+			Alert.alert('Error', 'Failed to prepare trip. Please try again.')
 		}
 	}
 
