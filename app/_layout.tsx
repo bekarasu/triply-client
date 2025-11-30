@@ -42,6 +42,7 @@ export default function RootLayout() {
 						<Stack.Screen name="verify-otp" />
 						<Stack.Screen name="home" />
 						<Stack.Screen name="create-trip" />
+						<Stack.Screen name="trip-details" />
 						<Stack.Screen name="+not-found" />
 					</Stack>
 					<StatusBar style="auto" />

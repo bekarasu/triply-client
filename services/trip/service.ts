@@ -3,7 +3,7 @@ import { authService } from '../auth/service'
 import { City } from '../city/types'
 import { ApiResponse, httpClient } from '../http-client'
 import { Logger } from '../logger'
-import { CreateTripRequest, CreateTripResponse } from './types'
+import { CreateTripRequest, TripDetails } from './types'
 
 const ENDPOINTS = {
 	ADDITIONAL_CITIES: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/cities/country/:id`,
@@ -19,7 +19,6 @@ class TripService {
 			const authHeader = await authService.getAuthHeader()
 			if (!authHeader) throw new Error('No auth token found')
 
-			// Validate countryId
 			if (
 				!countryId ||
 				countryId === 'undefined' ||
@@ -29,7 +28,6 @@ class TripService {
 				return []
 			}
 
-			// Construct URL with proper query parameters
 			const baseUrl = ENDPOINTS.ADDITIONAL_CITIES.replace(
 				':id',
 				countryId,
@@ -66,18 +64,17 @@ class TripService {
 		}
 	}
 
-	async createTrip(request: CreateTripRequest): Promise<CreateTripResponse> {
+	async createTrip(request: CreateTripRequest): Promise<TripDetails> {
 		try {
 			const authHeader = await authService.getAuthHeader()
 			if (!authHeader) throw new Error('No auth token found')
 
-			const response: ApiResponse<CreateTripResponse> =
-				await httpClient.post(
-					ENDPOINTS.CREATE_TRIP,
-					request,
-					authHeader,
-					300 * 1000, // 5 minutes timeout
-				)
+			const response: ApiResponse<TripDetails> = await httpClient.post(
+				ENDPOINTS.CREATE_TRIP,
+				request,
+				authHeader,
+				300 * 1000, // 5 minutes timeout
+			)
 
 			return response.data
 		} catch (error) {

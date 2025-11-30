@@ -206,64 +206,100 @@ export default function CriteriaModal({
 							Select what you want to do in this city:
 						</Text>
 						{recommendationCriterias.length > 0 ? (
-							<View style={styles.criteriaGrid}>
-								{recommendationCriterias.map((criteria) => {
-									const isSelected = selectedCriterias.some(
-										(r) => r.id === criteria.id,
-									)
-									return (
-										<TouchableOpacity
-											key={criteria.id}
-											style={[
-												styles.criteriaCard,
-												isSelected &&
-													styles.criteriaCardSelected,
-											]}
-											onPress={() =>
-												handleCriteriaToggle(criteria)
+							<View>
+								{Object.entries(
+									recommendationCriterias.reduce(
+										(acc, criteria) => {
+											const category = criteria.category
+											if (!acc[category]) {
+												acc[category] = []
 											}
-										>
-											<Text style={styles.criteriaIcon}>
-												{criteria.icon}
-											</Text>
-											<Text
-												style={[
-													styles.criteriaName,
-													isSelected &&
-														styles.criteriaNameSelected,
-												]}
-											>
-												{criteria.name}
-											</Text>
-											<Text
-												style={[
-													styles.criteriaDescription,
-													isSelected &&
-														styles.criteriaDescriptionSelected,
-												]}
-											>
-												{criteria.description}
-											</Text>
+											acc[category].push(criteria)
+											return acc
+										},
+										{} as Record<string, Criteria[]>,
+									),
+								).map(([category, categoryCriterias]) => (
+									<View
+										key={category}
+										style={styles.categorySection}
+									>
+										<View style={styles.categoryHeader}>
 											<View
 												style={[
-													styles.categoryBadge,
+													styles.categoryIndicator,
 													{
 														backgroundColor:
 															getCategoryColor(
-																criteria.category,
+																category,
 															),
 													},
 												]}
-											>
-												<Text
-													style={styles.categoryText}
-												>
-													{criteria.category}
-												</Text>
-											</View>
-										</TouchableOpacity>
-									)
-								})}
+											/>
+											<Text style={styles.categoryTitle}>
+												{category
+													.charAt(0)
+													.toUpperCase() +
+													category.slice(1)}
+											</Text>
+										</View>
+										<View style={styles.criteriaGrid}>
+											{categoryCriterias.map(
+												(criteria) => {
+													const isSelected =
+														selectedCriterias.some(
+															(r) =>
+																r.id ===
+																criteria.id,
+														)
+													return (
+														<TouchableOpacity
+															key={criteria.id}
+															style={[
+																styles.criteriaCard,
+																isSelected &&
+																	styles.criteriaCardSelected,
+															]}
+															onPress={() =>
+																handleCriteriaToggle(
+																	criteria,
+																)
+															}
+														>
+															<Text
+																style={
+																	styles.criteriaIcon
+																}
+															>
+																{criteria.icon}
+															</Text>
+															<Text
+																style={[
+																	styles.criteriaName,
+																	isSelected &&
+																		styles.criteriaNameSelected,
+																]}
+															>
+																{criteria.name}
+															</Text>
+															<Text
+																style={[
+																	styles.criteriaDescription,
+																	isSelected &&
+																		styles.criteriaDescriptionSelected,
+																]}
+															>
+																{
+																	criteria.description
+																}
+															</Text>
+														</TouchableOpacity>
+													)
+												},
+											)}
+										</View>
+									</View>
+								))}
 							</View>
 						) : (
 							<Text style={styles.loadingText}>
@@ -510,6 +546,26 @@ const styles = StyleSheet.create({
 		fontStyle: 'italic',
 		padding: 20,
 	},
+	categorySection: {
+		marginBottom: 24,
+	},
+	categoryHeader: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginBottom: 12,
+	},
+	categoryIndicator: {
+		width: 4,
+		height: 20,
+		borderRadius: 2,
+		marginRight: 8,
+	},
+	categoryTitle: {
+		fontSize: 16,
+		fontWeight: '700',
+		color: '#1f2937',
+		textTransform: 'capitalize',
+	},
 	criteriaGrid: {
 		flexDirection: 'row',
 		flexWrap: 'wrap',
@@ -551,20 +607,6 @@ const styles = StyleSheet.create({
 	},
 	criteriaDescriptionSelected: {
 		color: '#555',
-	},
-	categoryBadge: {
-		position: 'absolute',
-		top: 8,
-		right: 8,
-		paddingHorizontal: 3,
-		paddingVertical: 2,
-		borderRadius: 2,
-	},
-	categoryText: {
-		fontSize: 6,
-		color: '#fff',
-		fontWeight: '600',
-		textTransform: 'uppercase',
 	},
 	citiesGrid: {
 		flexDirection: 'row',

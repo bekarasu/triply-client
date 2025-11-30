@@ -1,3 +1,5 @@
+import { Logger } from '@/services/logger'
+import { formatDateOnly } from '@/utils/date'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import {
@@ -10,7 +12,6 @@ import {
 	View,
 } from 'react-native'
 import { useTripContext } from '../contexts/TripContext'
-import { Logger } from '../services/logger'
 import { tripService } from '../services/trip/service'
 
 const loadingSteps = [
@@ -45,14 +46,14 @@ export default function TripLoadingScreen() {
 	const [currentStep, setCurrentStep] = useState(0)
 	const [fadeAnim] = useState(new Animated.Value(0))
 	const router = useRouter()
-	const { selectedCities, tripStartDate } = useTripContext()
+	const { selectedCities, tripStartDate, setTripDetails } = useTripContext()
 
 	// Handle trip creation
 	useEffect(() => {
 		const createTrip = async () => {
 			try {
-				await tripService.createTrip({
-					startDate: tripStartDate,
+				const response = await tripService.createTrip({
+					startDate: formatDateOnly(tripStartDate),
 					destinations: selectedCities.map((sc) => ({
 						cityId: sc.city.id,
 						budget: sc.data.budget,
@@ -61,11 +62,16 @@ export default function TripLoadingScreen() {
 					})),
 				})
 
-				// Wait a bit for the last animation step to show
+				Logger.log('Trip created successfully:', response)
+
+				// Store trip details in context
+				setTripDetails(response)
+
+				// Wait a bit for the last animation step to show and ensure context is updated
 				setTimeout(() => {
-					// TODO: Navigate to trip details or home screen
-					// For now, go back to home
-					router.replace('/home')
+					Logger.log('Navigating to trip details')
+					// Navigate to trip details screen
+					router.replace('/trip-details')
 				}, 2000)
 			} catch (error) {
 				Logger.error('Error creating trip:', error)
@@ -83,7 +89,7 @@ export default function TripLoadingScreen() {
 		}
 
 		createTrip()
-	}, [selectedCities, tripStartDate, router])
+	}, [selectedCities, tripStartDate, router, setTripDetails])
 
 	useEffect(() => {
 		// Fade in animation
@@ -101,7 +107,7 @@ export default function TripLoadingScreen() {
 				}
 				return prev
 			})
-		}, 5000)
+		}, 15 * 1000)
 
 		return () => clearInterval(interval)
 	}, [fadeAnim])
