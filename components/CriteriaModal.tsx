@@ -176,7 +176,7 @@ export default function CriteriaModal({
 					</View>
 
 					<View style={styles.section}>
-						<Text style={styles.label}>Total Budget</Text>
+						<Text style={styles.label}>Total Budget (per person)</Text>
 						<View style={styles.inputContainer}>
 							<TextInput
 								style={styles.textInputWithSuffix}
@@ -570,7 +570,6 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		flexWrap: 'wrap',
 		gap: 6,
-		justifyContent: 'space-between',
 	},
 	criteriaCard: {
 		backgroundColor: '#f8f9fa',

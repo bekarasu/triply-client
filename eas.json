@@ -1,0 +1,51 @@
+{
+	"cli": {
+		"version": ">= 16.28.0",
+		"appVersionSource": "remote"
+	},
+	"build": {
+		"development": {
+			"developmentClient": true,
+			"distribution": "internal",
+			"environment": "development",
+			"android": {
+				"buildType": "apk"
+			},
+			"env": {
+				"EXPO_PUBLIC_RECOMMENDATION_SERVICE_URL": "http://10.0.2.2:3001/recommendation",
+				"EXPO_PUBLIC_USER_SERVICE_URL": "http://10.0.2.2:3002/user",
+				"EXPO_PUBLIC_TRAVEL_SERVICE_URL": "http://10.0.2.2:3003/travel",
+				"EXPO_PUBLIC_API_TIMEOUT": "10000",
+				"EXPO_PUBLIC_NODE_ENV": "development"
+			}
+		},
+		"staging": {
+			"distribution": "internal",
+			"environment": "staging",
+			"android": {
+				"buildType": "apk"
+			},
+			"env": {
+				"EXPO_PUBLIC_RECOMMENDATION_SERVICE_URL": "https://staging-api.triply.com/recommendation",
+				"EXPO_PUBLIC_USER_SERVICE_URL": "https://staging-api.triply.com/user",
+				"EXPO_PUBLIC_TRAVEL_SERVICE_URL": "https://staging-api.triply.com/travel",
+				"EXPO_PUBLIC_API_TIMEOUT": "12000",
+				"EXPO_PUBLIC_NODE_ENV": "staging"
+			}
+		},
+		"production": {
+			"environment": "production",
+			"distribution": "internal",
+			"android": {
+				"buildType": "apk"
+			},
+			"env": {
+				"EXPO_PUBLIC_RECOMMENDATION_SERVICE_URL": "http://10.0.2.2:3001/recommendation",
+				"EXPO_PUBLIC_USER_SERVICE_URL": "http://10.0.2.2:3002/user",
+				"EXPO_PUBLIC_TRAVEL_SERVICE_URL": "http://10.0.2.2:3003/travel",
+				"EXPO_PUBLIC_API_TIMEOUT": "15000",
+				"EXPO_PUBLIC_NODE_ENV": "production"
+			}
+		}
+	}
+}

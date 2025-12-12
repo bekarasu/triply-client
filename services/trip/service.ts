@@ -64,7 +64,10 @@ class TripService {
 		}
 	}
 
-	async createTrip(request: CreateTripRequest): Promise<TripDetails> {
+	async createTrip(
+		request: CreateTripRequest,
+		signal?: AbortSignal,
+	): Promise<TripDetails> {
 		try {
 			const authHeader = await authService.getAuthHeader()
 			if (!authHeader) throw new Error('No auth token found')
@@ -74,6 +77,7 @@ class TripService {
 				request,
 				authHeader,
 				300 * 1000, // 5 minutes timeout
+				signal,
 			)
 
 			return response.data

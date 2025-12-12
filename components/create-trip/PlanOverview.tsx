@@ -187,7 +187,7 @@ export default function CreateTripPlanOverview({
 						.toLocaleString(undefined, {
 							maximumFractionDigits: 2,
 						})}
-					$
+					$ (per person)
 				</Text>
 			</View>
 

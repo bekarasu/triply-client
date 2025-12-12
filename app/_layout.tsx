@@ -1,4 +1,3 @@
-import { useColorScheme } from '@/hooks/useColorScheme'
 import {
 	DarkTheme,
 	DefaultTheme,
@@ -10,6 +9,7 @@ import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import 'react-native-reanimated'
 import { TripProvider } from '../contexts/TripContext'
+import { useColorScheme } from 'react-native'
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme()

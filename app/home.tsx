@@ -1,4 +1,6 @@
 import { authService } from '@/services/auth/service'
+import { cityService } from '@/services/city/service'
+import { City } from '@/services/city/types'
 import { Logger } from '@/services/logger'
 import { profileService } from '@/services/profile/service'
 import { Profile } from '@/services/profile/types'
@@ -22,10 +24,12 @@ export default function HomeScreen() {
 	const [profile, setProfile] = useState<Profile | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [showProfileMenu, setShowProfileMenu] = useState(false)
+	const [popularCities, setPopularCities] = useState<City[]>([])
 	const router = useRouter()
 
 	useEffect(() => {
 		loadUserData()
+		loadPopularCities()
 	}, [])
 
 	const loadUserData = async () => {
@@ -37,6 +41,16 @@ export default function HomeScreen() {
 			console.error('Error loading user data:', error)
 		} finally {
 			setLoading(false)
+		}
+	}
+
+	const loadPopularCities = async () => {
+		try {
+			const cities = await cityService.getPopularCities()
+			setPopularCities(cities)
+		} catch (error) {
+			Logger.error('Error loading popular cities:', error)
+			// Keep empty array on error
 		}
 	}
 
@@ -203,94 +217,76 @@ export default function HomeScreen() {
 						</LinearGradient>
 					</View>
 
-					{/* Quick Actions */}
-					<View style={styles.quickActionsSection}>
-						<Text style={styles.sectionTitle}>Quick Actions</Text>
-						<View style={styles.quickActionsGrid}>
-							<TouchableOpacity style={styles.quickActionCard}>
-								<View style={styles.quickActionIcon}>
-									<Text style={styles.quickActionEmoji}>
-										🗺️
-									</Text>
-								</View>
-								<Text style={styles.quickActionTitle}>
-									Explore
-								</Text>
-								<Text style={styles.quickActionSubtitle}>
-									Destinations
-								</Text>
-							</TouchableOpacity>
-
-							<TouchableOpacity style={styles.quickActionCard}>
-								<View style={styles.quickActionIcon}>
-									<Text
-										style={styles.quickActionEmoji}
-									></Text>
-								</View>
-								<Text style={styles.quickActionTitle}>
-									Inspiration
-								</Text>
-								<Text style={styles.quickActionSubtitle}>
-									Get Ideas
-								</Text>
-							</TouchableOpacity>
-						</View>
-					</View>
-
 					{/* Featured Destinations */}
 					<View style={styles.featuredSection}>
 						<Text style={styles.sectionTitle}>
 							Popular Destinations
 						</Text>
-						<ScrollView
-							horizontal
-							showsHorizontalScrollIndicator={false}
-							style={styles.featuredScroll}
-						>
-							{[
-								{
-									name: 'Paris',
-									colors: ['#ff6b6b', '#ff8e53'] as const,
-								},
-								{
-									name: 'Tokyo',
-									colors: ['#4ecdc4', '#44a08d'] as const,
-								},
-								{
-									name: 'New York',
-									colors: ['#667eea', '#764ba2'] as const,
-								},
-								{
-									name: 'London',
-									colors: ['#f093fb', '#f5576c'] as const,
-								},
-								{
-									name: 'Bali',
-									colors: ['#4facfe', '#00f2fe'] as const,
-								},
-							].map((city, index) => (
-								<TouchableOpacity
-									key={index}
-									style={styles.featuredCard}
-								>
-									<LinearGradient
-										colors={city.colors}
-										start={{ x: 0, y: 0 }}
-										end={{ x: 1, y: 1 }}
-										style={styles.featuredCardGradient}
-									>
-										<Text style={styles.featuredCardTitle}>
-											{city.name}
-										</Text>
-										<Text
-											style={styles.featuredCardSubtitle}
+						{popularCities.length > 0 ? (
+							<ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								style={styles.featuredScroll}
+							>
+								{popularCities.map((city, index) => {
+									const gradientColors = [
+										['#ff6b6b', '#ff8e53'],
+										['#4ecdc4', '#44a08d'],
+										['#667eea', '#764ba2'],
+										['#f093fb', '#f5576c'],
+										['#4facfe', '#00f2fe'],
+										['#43e97b', '#38f9d7'],
+										['#fa709a', '#fee140'],
+										['#30cfd0', '#330867'],
+									] as const
+									const colors =
+										gradientColors[
+											index % gradientColors.length
+										]
+									return (
+										<TouchableOpacity
+											key={city.id}
+											style={styles.featuredCard}
+											onPress={() => {
+												router.push(
+													'/create-trip' as any,
+												)
+											}}
 										>
-											Explore now
-										</Text>
-									</LinearGradient>
-								</TouchableOpacity>
-							))}
-						</ScrollView>
+											<LinearGradient
+												colors={colors}
+												start={{ x: 0, y: 0 }}
+												end={{ x: 1, y: 1 }}
+												style={
+													styles.featuredCardGradient
+												}
+											>
+												<Text
+													style={
+														styles.featuredCardTitle
+													}
+												>
+													{city.name}
+												</Text>
+												<Text
+													style={
+														styles.featuredCardSubtitle
+													}
+												>
+													{city.country.name}
+												</Text>
+											</LinearGradient>
+										</TouchableOpacity>
+									)
+								})}
+							</ScrollView>
+						) : (
+							<View style={styles.emptyState}>
+								<Text style={styles.emptyStateText}>
+									Loading destinations...
+								</Text>
+							</View>
+						)}
 					</View>
 
 					{/* Trip Stats */}
@@ -618,6 +614,15 @@ const styles = StyleSheet.create({
 		color: '#6b7280',
 		textAlign: 'center',
 		fontWeight: '500',
+	},
+
+	emptyState: {
+		paddingVertical: 40,
+		alignItems: 'center',
+	},
+	emptyStateText: {
+		fontSize: 14,
+		color: '#6b7280',
 	},
 
 	bottomSpacing: {

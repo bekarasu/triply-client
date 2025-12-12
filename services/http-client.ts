@@ -94,9 +94,15 @@ class HttpClient {
 			},
 		}
 
-		// Add timeout
+		// Add timeout (but respect existing signal if provided)
 		const controller = new AbortController()
 		const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+		// If a signal is already provided, listen to it
+		if (options.signal) {
+			options.signal.addEventListener('abort', () => controller.abort())
+		}
+
 		config.signal = controller.signal
 
 		try {
@@ -222,6 +228,7 @@ class HttpClient {
 		body?: any,
 		headers?: Record<string, string>,
 		timeout: number = this.timeout,
+		signal?: AbortSignal,
 	): Promise<ApiResponse<T>> {
 		return this.request<T>(
 			endpoint,
@@ -229,6 +236,7 @@ class HttpClient {
 				method: 'POST',
 				body: body ? JSON.stringify(body) : undefined,
 				headers,
+				signal,
 			},
 			timeout,
 		)

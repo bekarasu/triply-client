@@ -1,7 +1,7 @@
 import { Logger } from '@/services/logger'
 import { formatDateOnly } from '@/utils/date'
 import { useRouter } from 'expo-router'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
 	ActivityIndicator,
 	Alert,
@@ -9,6 +9,7 @@ import {
 	SafeAreaView,
 	StyleSheet,
 	Text,
+	TouchableOpacity,
 	View,
 } from 'react-native'
 import { useTripContext } from '../contexts/TripContext'
@@ -45,35 +46,74 @@ const loadingSteps = [
 export default function TripLoadingScreen() {
 	const [currentStep, setCurrentStep] = useState(0)
 	const [fadeAnim] = useState(new Animated.Value(0))
+	const abortControllerRef = useRef<AbortController | null>(null)
 	const router = useRouter()
 	const { selectedCities, tripStartDate, setTripDetails } = useTripContext()
+	const [requestAborted, setRequestAborted] = useState(false)
+
+	const handleCancel = () => {
+		Alert.alert(
+			'Cancel Trip Creation',
+			'Are you sure you want to cancel? Your progress will be lost.',
+			[
+				{
+					text: 'Continue',
+					style: 'cancel',
+				},
+				{
+					text: 'Cancel Trip',
+					style: 'destructive',
+					onPress: () => {
+						// Abort the ongoing request
+						if (abortControllerRef.current) {
+							abortControllerRef.current.abort()
+							setRequestAborted(true)
+						}
+						router.back()
+					},
+				},
+			],
+		)
+	}
 
 	// Handle trip creation
 	useEffect(() => {
+		abortControllerRef.current = new AbortController()
+
 		const createTrip = async () => {
 			try {
-				const response = await tripService.createTrip({
-					startDate: formatDateOnly(tripStartDate),
-					destinations: selectedCities.map((sc) => ({
-						cityId: sc.city.id,
-						budget: sc.data.budget,
-						duration: sc.data.duration,
-						criteriaIds: sc.data.criterias.map((c) => c.id),
-					})),
-				})
+				const response = await tripService.createTrip(
+					{
+						startDate: formatDateOnly(tripStartDate),
+						destinations: selectedCities.map((sc) => ({
+							cityId: sc.city.id,
+							budget: sc.data.budget,
+							duration: sc.data.duration,
+							criteriaIds: sc.data.criterias.map((c) => c.id),
+						})),
+					},
+					abortControllerRef.current?.signal,
+				)
 
 				Logger.log('Trip created successfully:', response)
 
-				// Store trip details in context
 				setTripDetails(response)
 
-				// Wait a bit for the last animation step to show and ensure context is updated
 				setTimeout(() => {
 					Logger.log('Navigating to trip details')
-					// Navigate to trip details screen
 					router.replace('/trip-details')
 				}, 2000)
-			} catch (error) {
+			} catch (error: any) {
+				if (error.name === 'AbortError') {
+					Logger.log('Trip creation cancelled')
+					return
+				}
+
+				if (requestAborted) {
+					Logger.log('Request was aborted, not showing error alert')
+					return
+				}
+
 				Logger.error('Error creating trip:', error)
 				Alert.alert(
 					'Error',
@@ -89,6 +129,13 @@ export default function TripLoadingScreen() {
 		}
 
 		createTrip()
+
+		return () => {
+			// Clean up on unmount
+			if (abortControllerRef.current) {
+				abortControllerRef.current.abort()
+			}
+		}
 	}, [selectedCities, tripStartDate, router, setTripDetails])
 
 	useEffect(() => {
@@ -131,6 +178,14 @@ export default function TripLoadingScreen() {
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.content}>
+				{/* Cancel button */}
+				<TouchableOpacity
+					style={styles.cancelButton}
+					onPress={handleCancel}
+				>
+					<Text style={styles.cancelButtonText}>Cancel</Text>
+				</TouchableOpacity>
+
 				{/* Progress indicator */}
 				<View style={styles.progressContainer}>
 					{loadingSteps.map((_, index) => (
@@ -227,5 +282,29 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		color: '#9ca3af',
 		textAlign: 'center',
+	},
+	cancelButton: {
+		position: 'absolute',
+		top: 20,
+		right: 20,
+		paddingHorizontal: 20,
+		paddingVertical: 10,
+		backgroundColor: '#fff',
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: '#e5e7eb',
+		shadowColor: '#000',
+		shadowOffset: {
+			width: 0,
+			height: 2,
+		},
+		shadowOpacity: 0.1,
+		shadowRadius: 3,
+		elevation: 3,
+	},
+	cancelButtonText: {
+		fontSize: 14,
+		fontWeight: '600',
+		color: '#6b7280',
 	},
 })
