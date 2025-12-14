@@ -52,6 +52,7 @@ export default function CreateTripScreen() {
 	const [isSearching, setIsSearching] = useState(false)
 	const [hasSearched, setHasSearched] = useState(false)
 	const [tripDuration, setTripDuration] = useState<number | null>(0)
+	const [showDatePicker, setShowDatePicker] = useState(false)
 	const router = useRouter()
 
 	const handleSearch = useCallback(async () => {
@@ -208,6 +209,7 @@ export default function CreateTripScreen() {
 	}
 
 	const handleStartDateChange = (event: any, selectedDate?: Date) => {
+		setShowDatePicker(false)
 		if (selectedDate) {
 			setTripStartDate(selectedDate)
 		}
@@ -254,18 +256,56 @@ export default function CreateTripScreen() {
 
 					{/* Trip Dates Section */}
 					<View style={styles.tripDatesSection}>
-						<Text style={styles.sectionTitle}>Trip Start Date</Text>
-						<View style={styles.dateInputsContainer}>
-							<View style={styles.dateInputGroup}>
+						<View style={styles.sectionHeader}>
+							<View style={styles.iconContainer}>
+								<Text style={styles.iconText}>📅</Text>
+							</View>
+							<View style={styles.sectionHeaderText}>
+								<Text style={styles.sectionTitle}>
+									Trip Start Date
+								</Text>
+								<Text style={styles.sectionSubtitle}>
+									When does your adventure begin?
+								</Text>
+							</View>
+						</View>
+
+						<TouchableOpacity
+							style={styles.dateButton}
+							onPress={() => setShowDatePicker(true)}
+							activeOpacity={0.7}
+						>
+							<View style={styles.dateButtonContent}>
+								<View style={styles.dateInfo}>
+									<Text style={styles.dateLabel}>
+										Selected Date
+									</Text>
+									<Text style={styles.dateValue}>
+										{formatDateForDisplay(tripStartDate)}
+									</Text>
+								</View>
+								<View style={styles.calendarIconContainer}>
+									<Text style={styles.calendarIcon}>📆</Text>
+								</View>
+							</View>
+						</TouchableOpacity>
+
+						{showDatePicker && (
+							<View style={styles.datePickerContainer}>
 								<DateTimePicker
 									value={tripStartDate}
 									mode="date"
-									display="default"
+									display={
+										Platform.OS === 'ios'
+											? 'spinner'
+											: 'default'
+									}
 									onChange={handleStartDateChange}
 									minimumDate={new Date()}
+									style={styles.datePicker}
 								/>
 							</View>
-						</View>
+						)}
 					</View>
 
 					{/* Destination Search */}
@@ -379,71 +419,108 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 16,
 	},
 	sectionTitle: {
-		fontSize: 22,
+		fontSize: 20,
 		fontWeight: '700',
 		color: '#1f2937',
-		marginBottom: 20,
+		marginBottom: 4,
+	},
+	sectionSubtitle: {
+		fontSize: 14,
+		color: '#6b7280',
+		fontWeight: '500',
 	},
 
 	tripDatesSection: {
 		backgroundColor: '#fff',
 		padding: 24,
-		borderRadius: 16,
+		borderRadius: 20,
 		marginBottom: 32,
 		borderWidth: 1,
-		borderColor: '#f1f5f9',
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.05,
-		shadowRadius: 8,
-		elevation: 3,
+		borderColor: '#e5e7eb',
+		shadowColor: '#6366f1',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.08,
+		shadowRadius: 12,
+		elevation: 4,
 	},
-	dateInputsContainer: {
+	sectionHeader: {
 		flexDirection: 'row',
-		gap: 12,
+		alignItems: 'center',
+		marginBottom: 24,
+		paddingBottom: 16,
+		borderBottomWidth: 1,
+		borderBottomColor: '#f3f4f6',
 	},
-	dateInputGroup: {
+	iconContainer: {
+		width: 48,
+		height: 48,
+		borderRadius: 12,
+		backgroundColor: '#eef2ff',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 12,
+	},
+	iconText: {
+		fontSize: 24,
+	},
+	sectionHeaderText: {
 		flex: 1,
-		width: '50%',
-	},
-	dateLabel: {
-		fontSize: 14,
-		fontWeight: '600',
-		color: '#333',
-		marginBottom: 8,
-	},
-	dateInput: {
-		backgroundColor: '#fff',
-		borderRadius: 8,
-		paddingHorizontal: 12,
-		paddingVertical: 12,
-		fontSize: 14,
-		borderWidth: 1,
-		borderColor: '#ddd',
 	},
 	dateButton: {
+		backgroundColor: '#f9fafb',
+		borderRadius: 16,
+		paddingVertical: 20,
+		paddingHorizontal: 20,
+		borderWidth: 2,
+		borderColor: '#e5e7eb',
+		borderStyle: 'dashed',
+		marginBottom: 16,
+	},
+	dateButtonContent: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		backgroundColor: '#fff',
-		borderRadius: 8,
-		paddingHorizontal: 12,
-		paddingVertical: 12,
-		fontSize: 14,
-		borderWidth: 1,
-		borderColor: '#ddd',
-		minHeight: 48,
 	},
-	dateButtonText: {
-		fontSize: 14,
-		color: '#333',
+	dateInfo: {
 		flex: 1,
 	},
-	dateButtonPlaceholder: {
-		color: '#999',
+	dateLabel: {
+		fontSize: 12,
+		fontWeight: '600',
+		color: '#6b7280',
+		textTransform: 'uppercase',
+		letterSpacing: 0.5,
+		marginBottom: 6,
+	},
+	dateValue: {
+		fontSize: 20,
+		fontWeight: '700',
+		color: '#1f2937',
+	},
+	calendarIconContainer: {
+		width: 56,
+		height: 56,
+		borderRadius: 12,
+		backgroundColor: '#6366f1',
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: '#6366f1',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 4,
 	},
 	calendarIcon: {
-		fontSize: 16,
-		marginLeft: 8,
+		fontSize: 28,
+	},
+	datePickerContainer: {
+		backgroundColor: '#fff',
+		borderRadius: 12,
+		paddingVertical: 12,
+		borderWidth: 1,
+		borderColor: '#e5e7eb',
+	},
+	datePicker: {
+		width: '100%',
 	},
 })

@@ -3,11 +3,12 @@ import { authService } from '../auth/service'
 import { City } from '../city/types'
 import { ApiResponse, httpClient } from '../http-client'
 import { Logger } from '../logger'
-import { CreateTripRequest, TripDetails } from './types'
+import { CreateTripRequest, TripDetails, TripOverview } from './types'
 
 const ENDPOINTS = {
 	ADDITIONAL_CITIES: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/cities/country/:id`,
 	CREATE_TRIP: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/trips`,
+	TRIPS_OVERVIEW: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/trips/upcoming`,
 }
 
 class TripService {
@@ -83,6 +84,23 @@ class TripService {
 			return response.data
 		} catch (error) {
 			Logger.error('Create trip error:', error)
+			throw error
+		}
+	}
+
+	async getTripsOverview(): Promise<TripOverview[]> {
+		try {
+			const authHeader = await authService.getAuthHeader()
+			if (!authHeader) throw new Error('No auth token found')
+
+			const response: ApiResponse<TripOverview[]> = await httpClient.get(
+				ENDPOINTS.TRIPS_OVERVIEW,
+				authHeader,
+			)
+
+			return response.data
+		} catch (error) {
+			Logger.error('Get trips overview error:', error)
 			throw error
 		}
 	}

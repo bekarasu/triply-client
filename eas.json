@@ -40,9 +40,9 @@
 				"buildType": "apk"
 			},
 			"env": {
-				"EXPO_PUBLIC_RECOMMENDATION_SERVICE_URL": "http://10.0.2.2:3001/recommendation",
-				"EXPO_PUBLIC_USER_SERVICE_URL": "http://10.0.2.2:3002/user",
-				"EXPO_PUBLIC_TRAVEL_SERVICE_URL": "http://10.0.2.2:3003/travel",
+				"EXPO_PUBLIC_RECOMMENDATION_SERVICE_URL": "https://4770c2d1dc87.ngrok-free.app/recommendation",
+				"EXPO_PUBLIC_USER_SERVICE_URL": "https://4770c2d1dc87.ngrok-free.app/user",
+				"EXPO_PUBLIC_TRAVEL_SERVICE_URL": "https://4770c2d1dc87.ngrok-free.app/travel",
 				"EXPO_PUBLIC_API_TIMEOUT": "15000",
 				"EXPO_PUBLIC_NODE_ENV": "production"
 			}

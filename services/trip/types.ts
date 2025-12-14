@@ -47,3 +47,21 @@ export interface TripDetails {
 export interface TripDetailsResponse {
 	data: TripDetails
 }
+
+// Trip Overview Types
+export interface TripOverview {
+	id: string
+	firstDestination: string
+	startDate: string
+	endDate: string
+	totalBudget: number
+	totalDuration: number
+	totalDestinations: number
+	lastDestination: string
+}
+
+export interface TripOverviewResponse {
+	code: number
+	message: string
+	data: TripOverview[]
+}

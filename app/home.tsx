@@ -4,6 +4,8 @@ import { City } from '@/services/city/types'
 import { Logger } from '@/services/logger'
 import { profileService } from '@/services/profile/service'
 import { Profile } from '@/services/profile/types'
+import { tripService } from '@/services/trip/service'
+import { TripOverview } from '@/services/trip/types'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
@@ -25,11 +27,13 @@ export default function HomeScreen() {
 	const [loading, setLoading] = useState(true)
 	const [showProfileMenu, setShowProfileMenu] = useState(false)
 	const [popularCities, setPopularCities] = useState<City[]>([])
+	const [upcomingTrips, setUpcomingTrips] = useState<TripOverview[]>([])
 	const router = useRouter()
 
 	useEffect(() => {
 		loadUserData()
 		loadPopularCities()
+		loadUpcomingTrips()
 	}, [])
 
 	const loadUserData = async () => {
@@ -51,6 +55,15 @@ export default function HomeScreen() {
 		} catch (error) {
 			Logger.error('Error loading popular cities:', error)
 			// Keep empty array on error
+		}
+	}
+
+	const loadUpcomingTrips = async () => {
+		try {
+			const trips = await tripService.getTripsOverview()
+			setUpcomingTrips(trips)
+		} catch (error) {
+			Logger.error('Error loading upcoming trips:', error)
 		}
 	}
 
@@ -217,6 +230,204 @@ export default function HomeScreen() {
 						</LinearGradient>
 					</View>
 
+					{/* Upcoming Visits */}
+					{upcomingTrips.length > 0 && (
+						<View style={styles.upcomingSection}>
+							<View style={styles.sectionHeader}>
+								<Text style={styles.sectionTitle}>
+									Upcoming Visits
+								</Text>
+								<TouchableOpacity onPress={handleMyTrips}>
+									<Text style={styles.seeAllText}>
+										See all
+									</Text>
+								</TouchableOpacity>
+							</View>
+							<ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								style={styles.upcomingScroll}
+							>
+								{upcomingTrips.map((trip) => {
+									// Format dates
+									const startDate = new Date(trip.startDate)
+									const endDate = new Date(trip.endDate)
+									const formatDate = (date: Date) => {
+										return date.toLocaleDateString(
+											'en-US',
+											{
+												month: 'short',
+												day: 'numeric',
+											},
+										)
+									}
+
+									return (
+										<TouchableOpacity
+											key={trip.id}
+											style={styles.tripCard}
+											onPress={() => {
+												// Navigate to trip details
+												Logger.log(
+													'Navigate to trip details:',
+													trip.id,
+												)
+											}}
+										>
+											<View style={styles.tripCardHeader}>
+												<Text
+													style={styles.tripCardTitle}
+													numberOfLines={1}
+												>
+													{trip.firstDestination}
+													{trip.totalDestinations >
+														1 &&
+														` → ${trip.lastDestination}`}
+												</Text>
+												<View style={styles.tripBadge}>
+													<Text
+														style={
+															styles.tripBadgeText
+														}
+													>
+														Upcoming
+													</Text>
+												</View>
+											</View>
+
+											<View
+												style={styles.tripDateContainer}
+											>
+												<Text
+													style={styles.tripDateText}
+												>
+													{formatDate(startDate)} -{' '}
+													{formatDate(endDate)}
+												</Text>
+											</View>
+
+											<View
+												style={
+													styles.tripStatsContainer
+												}
+											>
+												<View style={styles.tripStat}>
+													<Text
+														style={
+															styles.tripStatIcon
+														}
+													>
+														📍
+													</Text>
+													<View>
+														<Text
+															style={
+																styles.tripStatValue
+															}
+														>
+															{
+																trip.totalDestinations
+															}
+														</Text>
+														<Text
+															style={
+																styles.tripStatLabel
+															}
+														>
+															{trip.totalDestinations ===
+															1
+																? 'City'
+																: 'Cities'}
+														</Text>
+													</View>
+												</View>
+												<View style={styles.tripStat}>
+													<Text
+														style={
+															styles.tripStatIcon
+														}
+													>
+														📅
+													</Text>
+													<View>
+														<Text
+															style={
+																styles.tripStatValue
+															}
+														>
+															{trip.totalDuration}
+														</Text>
+														<Text
+															style={
+																styles.tripStatLabel
+															}
+														>
+															Days
+														</Text>
+													</View>
+												</View>
+												<View style={styles.tripStat}>
+													<Text
+														style={
+															styles.tripStatIcon
+														}
+													>
+														💰
+													</Text>
+													<View>
+														<Text
+															style={
+																styles.tripStatValue
+															}
+														>
+															${trip.totalBudget}
+														</Text>
+														<Text
+															style={
+																styles.tripStatLabel
+															}
+														>
+															Budget
+														</Text>
+													</View>
+												</View>
+											</View>
+
+											<View
+												style={
+													styles.tripRouteContainer
+												}
+											>
+												<Text
+													style={
+														styles.tripRouteLabel
+													}
+												>
+													Route
+												</Text>
+												<Text
+													style={styles.tripRouteText}
+													numberOfLines={1}
+												>
+													{trip.firstDestination}
+													{trip.totalDestinations >
+														1 &&
+														` → ${trip.lastDestination}`}
+													{trip.totalDestinations >
+														2 &&
+														` (+${
+															trip.totalDestinations -
+															2
+														} more)`}
+												</Text>
+											</View>
+										</TouchableOpacity>
+									)
+								})}
+							</ScrollView>
+						</View>
+					)}
+
 					{/* Featured Destinations */}
 					<View style={styles.featuredSection}>
 						<Text style={styles.sectionTitle}>
@@ -287,31 +498,6 @@ export default function HomeScreen() {
 								</Text>
 							</View>
 						)}
-					</View>
-
-					{/* Trip Stats */}
-					<View style={styles.statsSection}>
-						<Text style={styles.sectionTitle}>Your Journey</Text>
-						<View style={styles.statsGrid}>
-							<View style={styles.statCard}>
-								<Text style={styles.statNumber}>0</Text>
-								<Text style={styles.statLabel}>
-									Trips Planned
-								</Text>
-							</View>
-							<View style={styles.statCard}>
-								<Text style={styles.statNumber}>0</Text>
-								<Text style={styles.statLabel}>
-									Cities Visited
-								</Text>
-							</View>
-							<View style={styles.statCard}>
-								<Text style={styles.statNumber}>0</Text>
-								<Text style={styles.statLabel}>
-									Countries Explored
-								</Text>
-							</View>
-						</View>
 					</View>
 
 					<View style={styles.bottomSpacing} />
@@ -539,6 +725,121 @@ const styles = StyleSheet.create({
 	quickActionSubtitle: {
 		fontSize: 12,
 		color: '#6b7280',
+	},
+
+	// Upcoming Visits Section
+	upcomingSection: {
+		paddingLeft: 24,
+		marginBottom: 32,
+	},
+	sectionHeader: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		paddingRight: 24,
+		marginBottom: 16,
+	},
+	seeAllText: {
+		fontSize: 14,
+		color: '#6366f1',
+		fontWeight: '600',
+	},
+	upcomingScroll: {
+		marginTop: 0,
+	},
+	tripCard: {
+		width: 300,
+		backgroundColor: '#fff',
+		borderRadius: 20,
+		marginRight: 16,
+		padding: 20,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.1,
+		shadowRadius: 12,
+		elevation: 6,
+		borderWidth: 1,
+		borderColor: '#f1f5f9',
+	},
+	tripCardHeader: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'flex-start',
+		marginBottom: 16,
+		gap: 8,
+	},
+	tripCardTitle: {
+		fontSize: 18,
+		fontWeight: '700',
+		color: '#1f2937',
+		flex: 1,
+		lineHeight: 24,
+	},
+	tripBadge: {
+		backgroundColor: '#dbeafe',
+		paddingHorizontal: 10,
+		paddingVertical: 4,
+		borderRadius: 12,
+	},
+	tripBadgeText: {
+		fontSize: 11,
+		fontWeight: '600',
+		color: '#1e40af',
+		textTransform: 'uppercase',
+		letterSpacing: 0.5,
+	},
+	tripDateContainer: {
+		marginBottom: 16,
+	},
+	tripDateText: {
+		fontSize: 14,
+		color: '#6366f1',
+		fontWeight: '600',
+	},
+	tripStatsContainer: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		marginBottom: 16,
+		paddingHorizontal: 8,
+	},
+	tripStat: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 8,
+	},
+	tripStatIcon: {
+		fontSize: 20,
+	},
+	tripStatValue: {
+		fontSize: 16,
+		fontWeight: '700',
+		color: '#1f2937',
+		lineHeight: 20,
+	},
+	tripStatLabel: {
+		fontSize: 11,
+		color: '#6b7280',
+		fontWeight: '500',
+		textTransform: 'uppercase',
+		letterSpacing: 0.5,
+	},
+	tripRouteContainer: {
+		backgroundColor: '#f8fafc',
+		borderRadius: 12,
+		padding: 12,
+	},
+	tripRouteLabel: {
+		fontSize: 11,
+		fontWeight: '600',
+		color: '#6366f1',
+		marginBottom: 6,
+		textTransform: 'uppercase',
+		letterSpacing: 0.5,
+	},
+	tripRouteText: {
+		fontSize: 14,
+		color: '#4b5563',
+		fontWeight: '500',
 	},
 
 	// Featured Section
