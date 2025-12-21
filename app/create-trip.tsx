@@ -37,6 +37,7 @@ export default function CreateTripScreen() {
 		addCity,
 		removeCity,
 		reorderCities,
+		selectedCity,
 	} = useTripContext()
 
 	const [searchQuery, setSearchQuery] = useState('')
@@ -78,10 +79,22 @@ export default function CreateTripScreen() {
 		loadActivityOptions()
 	}, [])
 
+	useEffect(() => {
+		if (selectedCity) {
+			setCriteriaModal({ visible: true, city: selectedCity })
+		}
+	}, [selectedCity])
+
 	const loadActivityOptions = async () => {
 		try {
 			const criterias =
 				await recommendationService.getRecommendationCriterias()
+
+			criterias.map((c) => {
+				console.log(c)
+				c.name = c.name.replaceAll('_', ' ')
+				return c
+			})
 
 			setRecommendationCriterias(criterias)
 		} catch (error) {
@@ -151,7 +164,7 @@ export default function CreateTripScreen() {
 		setCriteriaModal({ visible: false, city: null })
 		setSearchResults([])
 		setSearchQuery('')
-		setTripDuration(Number.parseInt(data.duration))
+		setTripDuration((tripDuration || 0) + Number.parseInt(data.duration))
 	}
 
 	const handleFinalizeTripSelection = async () => {

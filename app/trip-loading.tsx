@@ -1,11 +1,13 @@
 import { Logger } from '@/services/logger'
 import { formatDateOnly } from '@/utils/date'
+import * as Notifications from 'expo-notifications'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
 import {
 	ActivityIndicator,
 	Alert,
 	Animated,
+	AppState,
 	SafeAreaView,
 	StyleSheet,
 	Text,
@@ -14,6 +16,17 @@ import {
 } from 'react-native'
 import { useTripContext } from '../contexts/TripContext'
 import { tripService } from '../services/trip/service'
+
+// Configure notification handler
+Notifications.setNotificationHandler({
+	handleNotification: async () => ({
+		shouldShowAlert: true,
+		shouldPlaySound: true,
+		shouldSetBadge: false,
+		shouldShowBanner: true,
+		shouldShowList: true,
+	}),
+})
 
 const loadingSteps = [
 	{
@@ -47,9 +60,12 @@ export default function TripLoadingScreen() {
 	const [currentStep, setCurrentStep] = useState(0)
 	const [fadeAnim] = useState(new Animated.Value(0))
 	const abortControllerRef = useRef<AbortController | null>(null)
+	const hasCreatedTripRef = useRef(false)
 	const router = useRouter()
 	const { selectedCities, tripStartDate, setTripDetails } = useTripContext()
-	const [requestAborted, setRequestAborted] = useState(false)
+	const responseListener = useRef<Notifications.Subscription | undefined>(
+		undefined,
+	)
 
 	const handleCancel = () => {
 		Alert.alert(
@@ -64,10 +80,8 @@ export default function TripLoadingScreen() {
 					text: 'Cancel Trip',
 					style: 'destructive',
 					onPress: () => {
-						// Abort the ongoing request
 						if (abortControllerRef.current) {
 							abortControllerRef.current.abort()
-							setRequestAborted(true)
 						}
 						router.back()
 					},
@@ -76,8 +90,40 @@ export default function TripLoadingScreen() {
 		)
 	}
 
-	// Handle trip creation
 	useEffect(() => {
+		const requestPermissions = async () => {
+			const { status } = await Notifications.requestPermissionsAsync()
+			if (status !== 'granted') {
+				Alert.alert(
+					'Stay Updated',
+					"We'll notify you when your personalized trip is ready, even if you switch to another app.",
+				)
+			}
+		}
+
+		requestPermissions()
+
+		responseListener.current =
+			Notifications.addNotificationResponseReceivedListener(
+				(response) => {
+					router.replace('/trip-details')
+					return
+				},
+			)
+
+		return () => {
+			if (responseListener.current) {
+				responseListener.current.remove()
+			}
+		}
+	}, [router])
+
+	useEffect(() => {
+		if (hasCreatedTripRef.current) {
+			return
+		}
+
+		hasCreatedTripRef.current = true
 		abortControllerRef.current = new AbortController()
 
 		const createTrip = async () => {
@@ -95,58 +141,70 @@ export default function TripLoadingScreen() {
 					abortControllerRef.current?.signal,
 				)
 
-				Logger.log('Trip created successfully:', response)
+				console.log({ createdTrip: JSON.stringify(response) })
 
 				setTripDetails(response)
 
-				setTimeout(() => {
-					Logger.log('Navigating to trip details')
-					router.replace('/trip-details')
-				}, 2000)
+				const currentAppState = AppState.currentState
+				const isBackground =
+					currentAppState === 'background' ||
+					currentAppState === 'inactive'
+
+				if (isBackground) {
+					Logger.log('App is in background, showing notification')
+					await Notifications.scheduleNotificationAsync({
+						content: {
+							title: 'Your Trip is Ready!',
+							body: 'Your personalized trip has been created. Tap to view details.',
+							data: { screen: 'trip-details' },
+						},
+						trigger: null,
+					})
+				} else {
+					setTimeout(() => {
+						Logger.log('Navigating to trip details')
+						router.replace('/trip-details')
+					}, 2000)
+				}
 			} catch (error: any) {
 				if (error.name === 'AbortError') {
 					Logger.log('Trip creation cancelled')
 					return
 				}
 
-				if (requestAborted) {
-					Logger.log('Request was aborted, not showing error alert')
-					return
-				}
-
 				Logger.error('Error creating trip:', error)
-				Alert.alert(
-					'Error',
-					'Failed to create trip. Please try again.',
-					[
-						{
-							text: 'OK',
-							onPress: () => router.back(),
-						},
-					],
-				)
+
+				// Extract error message from server response
+				const errorMessage =
+					error?.response?.data?.message ||
+					error?.message ||
+					'Failed to create trip. Please try again.'
+
+				Alert.alert('Trip Creation Failed', errorMessage, [
+					{
+						text: 'OK',
+						onPress: () => router.back(),
+					},
+				])
 			}
 		}
 
 		createTrip()
 
 		return () => {
-			// Clean up on unmount
 			if (abortControllerRef.current) {
 				abortControllerRef.current.abort()
 			}
 		}
-	}, [selectedCities, tripStartDate, router, setTripDetails])
+	}, [selectedCities, tripStartDate, router])
 
 	useEffect(() => {
-		// Fade in animation
 		Animated.timing(fadeAnim, {
 			toValue: 1,
 			duration: 500,
 			useNativeDriver: true,
 		}).start()
 
-		// Change step every 5 seconds
 		const interval = setInterval(() => {
 			setCurrentStep((prev) => {
 				if (prev < loadingSteps.length - 1) {
@@ -160,7 +218,6 @@ export default function TripLoadingScreen() {
 	}, [fadeAnim])
 
 	useEffect(() => {
-		// Fade in/out animation when step changes
 		Animated.sequence([
 			Animated.timing(fadeAnim, {
 				toValue: 0,

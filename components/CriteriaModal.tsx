@@ -129,11 +129,12 @@ export default function CriteriaModal({
 
 	const getCategoryColor = (category: string): string => {
 		const colors = {
-			budget: '#4CAF50',
-			duration: '#2196F3',
-			activity: '#FF9800',
-			accommodation: '#9C27B0',
-			transport: '#607D8B',
+			parks_gardens: '#4CAF50',
+			general: '#2196F3',
+			museums_galleries: '#FF9800',
+			landmarks: '#9C27B0',
+			shopping_markets: '#607D8B',
+			religious: '#e42575ff',
 		}
 		return colors[category as keyof typeof colors] || '#666'
 	}
@@ -176,7 +177,14 @@ export default function CriteriaModal({
 					</View>
 
 					<View style={styles.section}>
-						<Text style={styles.label}>Total Budget (per person)</Text>
+						<Text style={styles.label}>
+							Total Budget (per person)
+						</Text>
+						<Text style={styles.budgetNote}>
+							For activities, dining, and experiences only. Please
+							budget separately for accommodations and
+							transportation.
+						</Text>
 						<View style={styles.inputContainer}>
 							<TextInput
 								style={styles.textInputWithSuffix}
@@ -240,7 +248,9 @@ export default function CriteriaModal({
 												{category
 													.charAt(0)
 													.toUpperCase() +
-													category.slice(1)}
+													category
+														.slice(1)
+														.replaceAll('_', ' ')}
 											</Text>
 										</View>
 										<View style={styles.criteriaGrid}>
@@ -398,6 +408,13 @@ const styles = StyleSheet.create({
 		fontWeight: '700',
 		color: '#1f2937',
 		marginBottom: 8,
+	},
+	budgetNote: {
+		fontSize: 13,
+		color: '#6b7280',
+		marginBottom: 12,
+		lineHeight: 18,
+		fontStyle: 'italic',
 	},
 	subtitle: {
 		fontSize: 15,

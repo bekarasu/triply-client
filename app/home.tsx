@@ -1,3 +1,4 @@
+import { useTripContext } from '@/contexts/TripContext'
 import { authService } from '@/services/auth/service'
 import { cityService } from '@/services/city/service'
 import { City } from '@/services/city/types'
@@ -28,6 +29,7 @@ export default function HomeScreen() {
 	const [showProfileMenu, setShowProfileMenu] = useState(false)
 	const [popularCities, setPopularCities] = useState<City[]>([])
 	const [upcomingTrips, setUpcomingTrips] = useState<TripOverview[]>([])
+	const { setSelectedCity } = useTripContext()
 	const router = useRouter()
 
 	useEffect(() => {
@@ -165,17 +167,6 @@ export default function HomeScreen() {
 												My Trips
 											</Text>
 										</TouchableOpacity>
-										<TouchableOpacity
-											style={styles.menuItem}
-											onPress={handleSettings}
-										>
-											<Text style={styles.menuIcon}>
-												⚙️
-											</Text>
-											<Text style={styles.menuText}>
-												Settings
-											</Text>
-										</TouchableOpacity>
 										<View style={styles.menuSeparator} />
 										<TouchableOpacity
 											style={styles.menuItem}
@@ -230,11 +221,6 @@ export default function HomeScreen() {
 								<Text style={styles.sectionTitle}>
 									Upcoming Visits
 								</Text>
-								<TouchableOpacity onPress={handleMyTrips}>
-									<Text style={styles.seeAllText}>
-										See all
-									</Text>
-								</TouchableOpacity>
 							</View>
 							<ScrollView
 								horizontal
@@ -260,10 +246,8 @@ export default function HomeScreen() {
 											key={trip.id}
 											style={styles.tripCard}
 											onPress={() => {
-												// Navigate to trip details
-												Logger.log(
-													'Navigate to trip details:',
-													trip.id,
+												router.push(
+													`/trip-details?tripId=${trip.id}` as any,
 												)
 											}}
 										>
@@ -452,9 +436,10 @@ export default function HomeScreen() {
 											key={city.id}
 											style={styles.featuredCard}
 											onPress={() => {
-												router.push(
-													'/create-trip' as any,
-												)
+												setSelectedCity(city)
+												router.push({
+													pathname: '/create-trip',
+												})
 											}}
 										>
 											<LinearGradient

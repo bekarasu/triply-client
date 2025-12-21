@@ -27,11 +27,23 @@ export interface FoodPlace {
 	description: string
 }
 
+export interface Weather {
+	date: string
+	temperature: {
+		minC: number
+		maxC: number
+	}
+	dayPhrase: string
+	precipitationProbability: number
+}
+
 export interface DayItinerary {
 	day: number
 	description: string
 	places: Place[]
 	foodPlaces: FoodPlace[]
+	date: string
+	weather?: Weather
 }
 
 export interface CityItinerary {
@@ -64,4 +76,25 @@ export interface TripOverviewResponse {
 	code: number
 	message: string
 	data: TripOverview[]
+}
+
+export interface MyTripCity {
+	cityId: string
+	cityName: string
+	days: DayItinerary[]
+}
+
+export interface MyTrip {
+	id: string
+	startDate: string
+	endDate: string
+	totalBudget: number
+	totalDuration: number
+	cities: MyTripCity[]
+}
+
+export interface MyTripsResponse {
+	code: number
+	message: string
+	data: MyTrip[]
 }

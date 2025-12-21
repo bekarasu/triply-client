@@ -17,6 +17,37 @@ function formatDate(date: Date): string {
 	return date.toLocaleDateString('en-US', options)
 }
 
+function getWeatherIcon(dayPhrase: string): string {
+	const phrase = dayPhrase.toLowerCase()
+	
+	// Clear conditions
+	if (phrase.includes('clear sky') || phrase.includes('mainly clear')) return '☀️'
+	
+	// Partly cloudy
+	if (phrase.includes('partly cloudy')) return '⛅'
+	
+	// Overcast
+	if (phrase.includes('overcast')) return '☁️'
+	
+	// Fog
+	if (phrase.includes('fog')) return '🌫️'
+	
+	// Thunderstorm
+	if (phrase.includes('thunderstorm')) return '⛈️'
+	
+	// Snow
+	if (phrase.includes('snow')) return '❄️'
+	
+	// Freezing rain
+	if (phrase.includes('freezing rain')) return '🌨️'
+	
+	// Rain (including drizzle and showers)
+	if (phrase.includes('rain') || phrase.includes('drizzle') || phrase.includes('shower')) return '🌧️'
+	
+	// Default
+	return '🌤️'
+}
+
 export function DayCard({
 	dayItinerary,
 	dayDate,
@@ -39,7 +70,7 @@ export function DayCard({
 					</View>
 					<View style={styles.headerInfo}>
 						<Text style={styles.dateText}>
-							{formatDate(dayDate)}
+							{formatDate(new Date(dayDate))}
 						</Text>
 						<Text style={styles.headerTitle}>
 							{dayItinerary.places.length} places •{' '}
@@ -47,7 +78,32 @@ export function DayCard({
 						</Text>
 					</View>
 				</View>
-				<Text style={styles.expandIcon}>{expanded ? '▲' : '▼'}</Text>
+				<View style={styles.headerRight}>
+					{dayItinerary.weather ? (
+						<View style={styles.weatherContainer}>
+							<Text style={styles.weatherIcon}>
+								{getWeatherIcon(dayItinerary.weather.dayPhrase)}
+							</Text>
+							<View style={styles.weatherInfo}>
+								<Text style={styles.weatherTemp}>
+									{Math.round(dayItinerary.weather.temperature.minC)}°-
+									{Math.round(dayItinerary.weather.temperature.maxC)}°
+								</Text>
+								<Text style={styles.weatherPrecip}>
+									💧 {dayItinerary.weather.precipitationProbability}%
+								</Text>
+							</View>
+						</View>
+					) : (
+						<View style={styles.weatherUnavailableContainer}>
+							<Text style={styles.weatherUnavailableIcon}>ℹ️</Text>
+							<Text style={styles.weatherUnavailableText}>
+								Weather{'\n'}unavailable
+							</Text>
+						</View>
+					)}
+					<Text style={styles.expandIcon}>{expanded ? '▲' : '▼'}</Text>
+				</View>
 			</TouchableOpacity>
 
 			{expanded && (
@@ -139,7 +195,8 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		padding: 20,
+		paddingVertical: 20,
+		paddingHorizontal: 10,
 		backgroundColor: '#ffffff',
 	},
 	headerLeft: {
@@ -159,7 +216,7 @@ const styles = StyleSheet.create({
 	},
 	dayBadge: {
 		backgroundColor: '#f0f4ff',
-		paddingHorizontal: 12,
+		paddingHorizontal: 6,
 		paddingVertical: 6,
 		borderRadius: 12,
 	},
@@ -173,6 +230,53 @@ const styles = StyleSheet.create({
 		fontWeight: '500',
 		color: '#6b7280',
 		flex: 1,
+	},
+	headerRight: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 6,
+	},
+	weatherContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 3,
+		backgroundColor: '#f0f9ff',
+		paddingHorizontal: 10,
+		paddingVertical: 6,
+		borderRadius: 12,
+	},
+	weatherIcon: {
+		fontSize: 16,
+	},
+	weatherInfo: {
+		gap: 2,
+	},
+	weatherTemp: {
+		fontSize: 12,
+		fontWeight: '600',
+		color: '#0369a1',
+	},
+	weatherPrecip: {
+		fontSize: 10,
+		fontWeight: '500',
+		color: '#0284c7',
+	},
+	weatherUnavailableContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 4,
+		backgroundColor: '#f8fafc',
+		paddingHorizontal: 8,
+		paddingVertical: 4,
+		borderRadius: 8,
+	},
+	weatherUnavailableIcon: {
+		fontSize: 10,
+	},
+	weatherUnavailableText: {
+		fontSize: 10,
+		fontWeight: '400',
+		color: '#94a3b8',
 	},
 	expandIcon: {
 		fontSize: 12,

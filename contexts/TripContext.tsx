@@ -14,9 +14,11 @@ export interface CityWithCriteria {
 }
 
 interface TripContextData {
+	selectedCity: City | null
 	selectedCities: CityWithCriteria[]
 	tripStartDate: Date
 	tripDetails: TripDetails | null
+	setSelectedCity: (city: City) => void
 	setSelectedCities: (cities: CityWithCriteria[]) => void
 	setTripStartDate: (date: Date) => void
 	setTripDetails: (tripDetails: TripDetails | null) => void
@@ -43,6 +45,7 @@ interface TripProviderProps {
 
 export function TripProvider({ children }: TripProviderProps) {
 	const [selectedCities, setSelectedCities] = useState<CityWithCriteria[]>([])
+	const [selectedCity, setSelectedCity] = useState<City | null>(null)
 	const [tripStartDate, setTripStartDate] = useState<Date>(new Date())
 	const [tripDetails, setTripDetails] = useState<TripDetails | null>(null)
 
@@ -50,6 +53,7 @@ export function TripProvider({ children }: TripProviderProps) {
 		setSelectedCities([])
 		setTripStartDate(new Date())
 		setTripDetails(null)
+		setSelectedCity(null)
 	}
 
 	// Set the global reference
@@ -70,9 +74,11 @@ export function TripProvider({ children }: TripProviderProps) {
 	}
 
 	const value: TripContextData = {
+		selectedCity,
 		selectedCities,
 		tripStartDate,
 		tripDetails,
+		setSelectedCity,
 		setSelectedCities,
 		setTripStartDate,
 		setTripDetails,

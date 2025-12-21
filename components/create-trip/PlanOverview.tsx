@@ -153,7 +153,7 @@ export default function CreateTripPlanOverview({
 						{formatDateForDisplay(
 							new Date(
 								tripStartDate.getTime() +
-									((tripDuration ?? 0) as number) *
+									(((tripDuration ?? 0) as number) - 1) *
 										24 *
 										60 *
 										60 *

@@ -195,10 +195,7 @@ class HttpClient {
 			clearTimeout(timeoutId)
 
 			if (error.name === 'AbortError') {
-				throw {
-					message: 'Request timeout',
-					status: 408,
-				} as ApiError
+				throw error
 			}
 
 			if (error.message && error.status) {

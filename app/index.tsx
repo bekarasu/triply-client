@@ -20,20 +20,20 @@ export default function Index() {
 				// First check if user is authenticated
 				const isAuth = await authService.isAuthenticated()
 				if (isAuth) {
-					router.replace('/home' as any)
+					router.replace('/home')
 					return
 				}
 
 				// If not authenticated, check onboarding status
 				const onboardingCompleted = await isOnboardingCompleted()
 				if (onboardingCompleted) {
-					router.replace('/login' as any)
+					router.replace('/login')
 				} else {
-					router.replace('/onboarding-1' as any)
+					router.replace('/onboarding-1')
 				}
 			} catch (error) {
 				console.error('Error checking app state:', error)
-				router.replace('/onboarding-1' as any)
+				router.replace('/onboarding-1')
 			} finally {
 				setIsLoading(false)
 			}

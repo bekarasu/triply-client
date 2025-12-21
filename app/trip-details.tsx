@@ -1,9 +1,17 @@
 import { DayCard } from '@/components/trip/DayCard'
 import { useTripContext } from '@/contexts/TripContext'
-import { useRouter } from 'expo-router'
+import { Logger } from '@/services/logger'
+import { tripService } from '@/services/trip/service'
+import { TripDetails } from '@/services/trip/types'
+import {
+	RelativePathString,
+	useLocalSearchParams,
+	useRouter,
+} from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import {
 	ActivityIndicator,
+	Alert,
 	SafeAreaView,
 	ScrollView,
 	StyleSheet,
@@ -20,17 +28,54 @@ const calculateDayDate = (startDate: Date, dayNumber: number): Date => {
 
 export default function TripDetailsScreen() {
 	const router = useRouter()
-	const { tripDetails, tripStartDate } = useTripContext()
+	const { tripId, from } = useLocalSearchParams<{
+		tripId?: string
+		from?: RelativePathString
+	}>()
+	const {
+		tripDetails: contextTripDetails,
+		tripStartDate,
+		clearTripData,
+	} = useTripContext()
+	const [tripDetails, setTripDetails] = useState<TripDetails | null>(null)
+	const [startDate, setStartDate] = useState<Date>(new Date())
 	const [selectedCityIndex, setSelectedCityIndex] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
 
 	useEffect(() => {
-		// Give a short delay to ensure context is updated
-		const timer = setTimeout(() => {
-			setIsLoading(false)
-		}, 500)
-		return () => clearTimeout(timer)
-	}, [])
+		const loadTripDetails = async () => {
+			try {
+				if (tripId) {
+					// Fetch trip from API
+					const details = await tripService.getTripById(tripId)
+					setTripDetails(details)
+					// Use current date as fallback when fetching from API
+					// In a real app, you might want to fetch this from the backend
+					setStartDate(new Date())
+				} else if (contextTripDetails) {
+					// Use context data if no tripId (coming from create-trip)
+					setTripDetails(contextTripDetails)
+					setStartDate(tripStartDate)
+				}
+			} catch (error) {
+				Logger.error('Error loading trip details:', error)
+				Alert.alert(
+					'Error',
+					'Failed to load trip details. Please try again.',
+					[
+						{
+							text: 'OK',
+							onPress: () => router.replace('/home'),
+						},
+					],
+				)
+			} finally {
+				setIsLoading(false)
+			}
+		}
+
+		loadTripDetails()
+	}, [tripId, contextTripDetails, router, tripStartDate])
 
 	if (isLoading) {
 		return (
@@ -52,12 +97,6 @@ export default function TripDetailsScreen() {
 					<Text style={styles.emptyDescription}>
 						Start planning your adventure!
 					</Text>
-					<TouchableOpacity
-						style={styles.primaryButton}
-						onPress={() => router.replace('/home')}
-					>
-						<Text style={styles.primaryButtonText}>Go to Home</Text>
-					</TouchableOpacity>
 				</View>
 			</SafeAreaView>
 		)
@@ -74,7 +113,16 @@ export default function TripDetailsScreen() {
 			<View style={styles.header}>
 				<TouchableOpacity
 					style={styles.backButton}
-					onPress={() => router.back()}
+					onPress={() => {
+						if (from) {
+							router.replace(from)
+							return
+						}
+
+						clearTripData()
+
+						router.replace('/home')
+					}}
 				>
 					<Text style={styles.backIcon}>←</Text>
 				</TouchableOpacity>
@@ -151,7 +199,7 @@ export default function TripDetailsScreen() {
 							.reduce((sum, city) => sum + city.days.length, 0)
 						const currentDayOffset = daysBefore + index + 1
 						const dayDate = calculateDayDate(
-							tripStartDate,
+							startDate,
 							currentDayOffset,
 						)
 
@@ -166,14 +214,6 @@ export default function TripDetailsScreen() {
 					})}
 				</View>
 				<View style={styles.actions}>
-					<TouchableOpacity
-						style={styles.secondaryButton}
-						onPress={() => router.push('/home')}
-					>
-						<Text style={styles.secondaryButtonText}>
-							Back to Home
-						</Text>
-					</TouchableOpacity>
 					{/* <TouchableOpacity
 						style={styles.primaryButton}
 						onPress={() => {
@@ -184,7 +224,6 @@ export default function TripDetailsScreen() {
 						<Text style={styles.primaryButtonText}>Share Trip</Text>
 					</TouchableOpacity> */}
 				</View>
-
 				{/* Bottom Padding */}
 				<View style={styles.bottomPadding} />
 			</ScrollView>

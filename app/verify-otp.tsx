@@ -70,7 +70,7 @@ export default function VerifyOtpScreen() {
 				otpToken,
 			})
 
-			router.replace('/home' as any)
+			router.replace('/home')
 		} catch (error: any) {
 			Logger.error('OTP verification error:', error)
 			const apiError = error as ApiError

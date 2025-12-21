@@ -3,12 +3,14 @@ import { authService } from '../auth/service'
 import { City } from '../city/types'
 import { ApiResponse, httpClient } from '../http-client'
 import { Logger } from '../logger'
-import { CreateTripRequest, TripDetails, TripOverview } from './types'
+import { CreateTripRequest, MyTrip, TripDetails, TripOverview } from './types'
 
 const ENDPOINTS = {
 	ADDITIONAL_CITIES: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/cities/country/:id`,
 	CREATE_TRIP: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/trips`,
 	TRIPS_OVERVIEW: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/trips/upcoming`,
+	TRIP_DETAILS: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/trips/:tripId`,
+	MY_TRIPS: `${API_CONFIG.SERVICE_BASE_URL.TRAVEL}/trips`,
 }
 
 class TripService {
@@ -73,6 +75,8 @@ class TripService {
 			const authHeader = await authService.getAuthHeader()
 			if (!authHeader) throw new Error('No auth token found')
 
+			console.log({ request: JSON.stringify(request) })
+
 			const response: ApiResponse<TripDetails> = await httpClient.post(
 				ENDPOINTS.CREATE_TRIP,
 				request,
@@ -101,6 +105,41 @@ class TripService {
 			return response.data
 		} catch (error) {
 			Logger.error('Get trips overview error:', error)
+			throw error
+		}
+	}
+
+	async getTripById(tripId: string): Promise<TripDetails> {
+		try {
+			const authHeader = await authService.getAuthHeader()
+			if (!authHeader) throw new Error('No auth token found')
+
+			const url = ENDPOINTS.TRIP_DETAILS.replace(':tripId', tripId)
+			const response: ApiResponse<TripDetails> = await httpClient.get(
+				url,
+				authHeader,
+			)
+
+			return response.data
+		} catch (error) {
+			Logger.error('Get trip details error:', error)
+			throw error
+		}
+	}
+
+	async getMyTrips(): Promise<MyTrip[]> {
+		try {
+			const authHeader = await authService.getAuthHeader()
+			if (!authHeader) throw new Error('No auth token found')
+
+			const response: ApiResponse<MyTrip[]> = await httpClient.get(
+				ENDPOINTS.MY_TRIPS,
+				authHeader,
+			)
+
+			return response.data
+		} catch (error) {
+			Logger.error('Get my trips error:', error)
 			throw error
 		}
 	}
