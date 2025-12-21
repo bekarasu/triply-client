@@ -95,8 +95,6 @@ npm run start
 
 **All-in-One Platform**: Everything you need for travel planning in one convenient app.
 
-**Cross-Device Access**: Start planning on your phone, continue on your tablet, finish on your computer.
-
 **Secure & Reliable**: Your travel data is protected with industry-standard security measures.
 
 ## 📞 Support
