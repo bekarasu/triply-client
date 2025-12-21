@@ -73,14 +73,7 @@ export default function HomeScreen() {
 
 	const handleMyTrips = () => {
 		setShowProfileMenu(false)
-		// Navigate to my trips screen (you can implement this later)
-		Logger.log('Navigate to My Trips')
-	}
-
-	const handleSettings = () => {
-		setShowProfileMenu(false)
-		// Navigate to settings screen (you can implement this later)
-		Logger.log('Navigate to Settings')
+		router.push('/my-trips')
 	}
 
 	const handleLogout = () => {

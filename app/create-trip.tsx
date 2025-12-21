@@ -216,7 +216,7 @@ export default function CreateTripScreen() {
 	}
 
 	const handleBackPress = () => {
-		router.back()
+		router.replace('/home')
 	}
 
 	return (
