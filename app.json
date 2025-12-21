@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "triply-client",
-    "slug": "triply-client",
+    "name": "Triply",
+    "slug": "triply",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -17,7 +17,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.bekarasu.triplyclient"
+      "package": "com.bekarasu.triply"
     },
     "web": {
       "bundler": "metro",
