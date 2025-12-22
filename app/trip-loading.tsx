@@ -282,8 +282,8 @@ export default function TripLoadingScreen() {
 					This may take a few moments...
 				</Text>
 				<Text style={styles.backgroundTip}>
-					Need to check something else? You can switch apps and we will
-					send a friendly notification once your trip is ready.
+					Need to check something else? You can switch apps and we
+					will send a friendly notification once your trip is ready.
 				</Text>
 			</View>
 		</SafeAreaView>
