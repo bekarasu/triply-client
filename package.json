@@ -1,5 +1,5 @@
 {
-  "name": "triply-client",
+  "name": "triply",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -18,7 +18,8 @@
     "ios:prod": "dotenv -e .env.production -- expo start --ios --port 8082",
     "web": "expo start --web",
     "lint": "expo lint",
-    "build:android": "node ./scripts/build.js --env production --platform android --local",
+    "build:android": "node ./scripts/build.js --env development --platform android --local",
+    "build:android:dev": "npx eas build --profile development --platform android --local",
     "build:android:bundle": "expo build:android -t app-bundle",
     "build:ios": "expo build:ios",
     "build": "node ./scripts/build.js"

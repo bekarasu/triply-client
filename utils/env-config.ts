@@ -5,9 +5,17 @@
 
 export type Environment = 'development' | 'staging' | 'production'
 
+const NODE_ENV =
+	(process.env.EXPO_PUBLIC_NODE_ENV as Environment) || 'development'
+
+const ENABLE_NETWORK_MONITOR =
+	process.env.EXPO_PUBLIC_ENABLE_NETWORK_MONITOR !== undefined
+		? process.env.EXPO_PUBLIC_ENABLE_NETWORK_MONITOR === 'true'
+		: NODE_ENV !== 'production'
+
 export const ENV_CONFIG = {
 	// Current environment
-	NODE_ENV: (process.env.EXPO_PUBLIC_NODE_ENV as Environment) || 'development',
+	NODE_ENV,
 
 	// Service URLs
 	RECOMMENDATION_SERVICE_URL:
@@ -22,6 +30,7 @@ export const ENV_CONFIG = {
 
 	// API Configuration
 	API_TIMEOUT: Number(process.env.EXPO_PUBLIC_API_TIMEOUT) || 10000,
+	ENABLE_NETWORK_MONITOR,
 
 	// Validation
 	validate: () => {
@@ -46,6 +55,8 @@ export const ENV_CONFIG = {
 export const isDevelopment = () => ENV_CONFIG.NODE_ENV === 'development'
 export const isStaging = () => ENV_CONFIG.NODE_ENV === 'staging'
 export const isProduction = () => ENV_CONFIG.NODE_ENV === 'production'
+export const isNetworkMonitorEnabled = () =>
+	ENV_CONFIG.ENABLE_NETWORK_MONITOR === true
 
 // Validate environment on import
 ENV_CONFIG.validate()
