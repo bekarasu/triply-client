@@ -19,31 +19,37 @@ function formatDate(date: Date): string {
 
 function getWeatherIcon(dayPhrase: string): string {
 	const phrase = dayPhrase.toLowerCase()
-	
+
 	// Clear conditions
-	if (phrase.includes('clear sky') || phrase.includes('mainly clear')) return '☀️'
-	
+	if (phrase.includes('clear sky') || phrase.includes('mainly clear'))
+		return '☀️'
+
 	// Partly cloudy
 	if (phrase.includes('partly cloudy')) return '⛅'
-	
+
 	// Overcast
 	if (phrase.includes('overcast')) return '☁️'
-	
+
 	// Fog
 	if (phrase.includes('fog')) return '🌫️'
-	
+
 	// Thunderstorm
 	if (phrase.includes('thunderstorm')) return '⛈️'
-	
+
 	// Snow
 	if (phrase.includes('snow')) return '❄️'
-	
+
 	// Freezing rain
 	if (phrase.includes('freezing rain')) return '🌨️'
-	
+
 	// Rain (including drizzle and showers)
-	if (phrase.includes('rain') || phrase.includes('drizzle') || phrase.includes('shower')) return '🌧️'
-	
+	if (
+		phrase.includes('rain') ||
+		phrase.includes('drizzle') ||
+		phrase.includes('shower')
+	)
+		return '🌧️'
+
 	// Default
 	return '🌤️'
 }
@@ -86,23 +92,38 @@ export function DayCard({
 							</Text>
 							<View style={styles.weatherInfo}>
 								<Text style={styles.weatherTemp}>
-									{Math.round(dayItinerary.weather.temperature.minC)}°-
-									{Math.round(dayItinerary.weather.temperature.maxC)}°
+									{Math.round(
+										dayItinerary.weather.temperature.minC,
+									)}
+									°-
+									{Math.round(
+										dayItinerary.weather.temperature.maxC,
+									)}
+									°
 								</Text>
 								<Text style={styles.weatherPrecip}>
-									💧 {dayItinerary.weather.precipitationProbability}%
+									💧{' '}
+									{
+										dayItinerary.weather
+											.precipitationProbability
+									}
+									%
 								</Text>
 							</View>
 						</View>
 					) : (
 						<View style={styles.weatherUnavailableContainer}>
-							<Text style={styles.weatherUnavailableIcon}>ℹ️</Text>
+							<Text style={styles.weatherUnavailableIcon}>
+								ℹ️
+							</Text>
 							<Text style={styles.weatherUnavailableText}>
 								Weather{'\n'}unavailable
 							</Text>
 						</View>
 					)}
-					<Text style={styles.expandIcon}>{expanded ? '▲' : '▼'}</Text>
+					<Text style={styles.expandIcon}>
+						{expanded ? '▲' : '▼'}
+					</Text>
 				</View>
 			</TouchableOpacity>
 

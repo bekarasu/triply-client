@@ -14,6 +14,7 @@ import {
 	ActivityIndicator,
 	Alert,
 	Dimensions,
+	Image,
 	SafeAreaView,
 	ScrollView,
 	StyleSheet,
@@ -442,29 +443,63 @@ export default function HomeScreen() {
 												})
 											}}
 										>
-											<LinearGradient
-												colors={colors}
-												start={{ x: 0, y: 0 }}
-												end={{ x: 1, y: 1 }}
-												style={
-													styles.featuredCardGradient
-												}
-											>
-												<Text
+											{city.imageUrl ? (
+												<>
+													<Image
+														source={{
+															uri: city.imageUrl,
+														}}
+														style={
+															styles.featuredCardImage
+														}
+														resizeMode="cover"
+													/>
+													<View
+														style={
+															styles.featuredCardOverlay
+														}
+													>
+														<Text
+															style={
+																styles.featuredCardTitle
+															}
+														>
+															{city.name}
+														</Text>
+														<Text
+															style={
+																styles.featuredCardSubtitle
+															}
+														>
+															{city.country.name}
+														</Text>
+													</View>
+												</>
+											) : (
+												<LinearGradient
+													colors={colors}
+													start={{ x: 0, y: 0 }}
+													end={{ x: 1, y: 1 }}
 													style={
-														styles.featuredCardTitle
+														styles.featuredCardGradient
 													}
 												>
-													{city.name}
-												</Text>
-												<Text
-													style={
-														styles.featuredCardSubtitle
-													}
-												>
-													{city.country.name}
-												</Text>
-											</LinearGradient>
+													<Text
+														style={
+															styles.featuredCardTitle
+														}
+													>
+														{city.name}
+													</Text>
+													<Text
+														style={
+															styles.featuredCardSubtitle
+														}
+													>
+														{city.country.name}
+													</Text>
+												</LinearGradient>
+											)}
 										</TouchableOpacity>
 									)
 								})}
@@ -845,6 +880,22 @@ const styles = StyleSheet.create({
 		justifyContent: 'flex-end',
 		padding: 16,
 		borderRadius: 16,
+	},
+	featuredCardImage: {
+		position: 'absolute',
+		width: '100%',
+		height: '100%',
+		borderRadius: 16,
+	},
+	featuredCardOverlay: {
+		position: 'absolute',
+		bottom: 0,
+		left: 0,
+		right: 0,
+		paddingHorizontal: 16,
+		paddingVertical: 6,
+		borderRadius: 8,
+		backgroundColor: 'rgba(0, 0, 0, 0.4)',
 	},
 	featuredCardTitle: {
 		fontSize: 18,

@@ -4,6 +4,7 @@ export interface City {
 	countryId: number
 	population: number
 	country: Country
+	imageUrl?: string | null
 }
 
 export interface Country {
