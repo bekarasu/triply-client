@@ -75,8 +75,6 @@ class TripService {
 			const authHeader = await authService.getAuthHeader()
 			if (!authHeader) throw new Error('No auth token found')
 
-			console.log({ request: JSON.stringify(request) })
-
 			const response: ApiResponse<TripDetails> = await httpClient.post(
 				ENDPOINTS.CREATE_TRIP,
 				request,

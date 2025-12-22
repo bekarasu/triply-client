@@ -10,6 +10,6 @@ export class Logger {
 			// TODO send error request to log it
 			return // Suppress error logs in production
 		}
-		console.error(message, ...optionalParams)
+		console.log(message, ...optionalParams)
 	}
 }

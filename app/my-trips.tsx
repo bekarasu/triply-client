@@ -118,7 +118,7 @@ export default function MyTripsScreen() {
 							onPress={() => router.push('/create-trip')}
 						>
 							<Text style={styles.createButtonText}>
-								Create Trip
+								Plan Your First Trip
 							</Text>
 						</TouchableOpacity>
 					</View>

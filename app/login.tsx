@@ -71,7 +71,7 @@ export default function LoginScreen() {
 				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 					<ScrollView style={styles.scrollView}>
 						<View style={styles.content}>
-							<View style={styles.envContainer}>
+							{/* <View style={styles.envContainer}>
 								<Text style={styles.envTitle}>
 									Environment Configuration:
 								</Text>
@@ -86,7 +86,7 @@ export default function LoginScreen() {
 									TRAVEL_SERVICE:{' '}
 									{ENV_CONFIG.TRAVEL_SERVICE_URL}
 								</Text>
-							</View>
+							</View> */}
 
 							<View style={styles.headerSection}>
 								<View style={styles.logoContainer}>

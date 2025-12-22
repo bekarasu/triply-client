@@ -281,6 +281,10 @@ export default function TripLoadingScreen() {
 				<Text style={styles.bottomText}>
 					This may take a few moments...
 				</Text>
+				<Text style={styles.backgroundTip}>
+					Need to check something else? You can switch apps and we will
+					send a friendly notification once your trip is ready.
+				</Text>
 			</View>
 		</SafeAreaView>
 	)
@@ -339,6 +343,13 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		color: '#9ca3af',
 		textAlign: 'center',
+	},
+	backgroundTip: {
+		marginTop: 8,
+		fontSize: 14,
+		color: '#6b7280',
+		textAlign: 'center',
+		lineHeight: 20,
 	},
 	cancelButton: {
 		position: 'absolute',

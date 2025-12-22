@@ -1,3 +1,4 @@
+import { NetworkMonitorOverlay } from '@/components/NetworkMonitorOverlay'
 import {
 	DarkTheme,
 	DefaultTheme,
@@ -6,10 +7,10 @@ import {
 import { useFonts } from 'expo-font'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
+import { useColorScheme } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import 'react-native-reanimated'
 import { TripProvider } from '../contexts/TripContext'
-import { useColorScheme } from 'react-native'
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme()
@@ -47,6 +48,7 @@ export default function RootLayout() {
 						<Stack.Screen name="+not-found" />
 					</Stack>
 					<StatusBar style="auto" />
+					<NetworkMonitorOverlay />
 				</ThemeProvider>
 			</TripProvider>
 		</GestureHandlerRootView>

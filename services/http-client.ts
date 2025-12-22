@@ -1,6 +1,7 @@
 // HTTP Client with error handling
 import { API_CONFIG } from './api-config'
 import { tokenManager } from './auth/token-manager'
+import { networkMonitor } from './network-monitor'
 export interface ApiResponse<T = any> {
 	success: boolean
 	message: string
@@ -19,6 +20,7 @@ interface QueuedRequest {
 	reject: (error: any) => void
 	url: string
 	config: RequestInit
+	monitorId: string | null
 }
 
 class HttpClient {
@@ -28,6 +30,71 @@ class HttpClient {
 
 	constructor() {
 		this.timeout = API_CONFIG.TIMEOUT
+	}
+
+	private normalizeHeaders(
+		headers?: HeadersInit | Headers | Record<string, string>,
+	): Record<string, string> | undefined {
+		if (!headers) {
+			return undefined
+		}
+
+		if (headers instanceof Headers) {
+			const result: Record<string, string> = {}
+			headers.forEach((value, key) => {
+				result[key] = value
+			})
+			return result
+		}
+
+		if (Array.isArray(headers)) {
+			return headers.reduce((acc, [key, value]) => {
+				acc[key.toLowerCase()] = value
+				return acc
+			}, {} as Record<string, string>)
+		}
+
+		return Object.entries(headers as Record<string, string>).reduce(
+			(acc, [key, value]) => {
+				acc[key.toLowerCase()] = String(value)
+				return acc
+			},
+			{} as Record<string, string>,
+		)
+	}
+
+	private parseRequestBody(body?: BodyInit | null): any {
+		if (!body) {
+			return undefined
+		}
+
+		if (typeof body === 'string') {
+			try {
+				return JSON.parse(body)
+			} catch (error) {
+				return body
+			}
+		}
+
+		if (body instanceof FormData) {
+			const result: Record<string, any> = {}
+			body.forEach((value, key) => {
+				result[key] = value
+			})
+			return result
+		}
+
+		return '[unserializable payload]'
+	}
+
+	private startMonitorEntry(url: string, config: RequestInit): string | null {
+		return networkMonitor.start({
+			method: (config.method || 'GET').toString().toUpperCase(),
+			url,
+			startedAt: Date.now(),
+			requestHeaders: this.normalizeHeaders(config.headers),
+			requestBody: this.parseRequestBody(config.body as BodyInit | null),
+		})
 	}
 
 	private async processQueuedRequests(): Promise<void> {
@@ -48,11 +115,25 @@ class HttpClient {
 				}
 
 				const response = await fetch(queuedRequest.url, retryConfig)
+				const responseHeaders = this.normalizeHeaders(response.headers)
 				if (response.ok) {
 					const data = await response.json()
+					networkMonitor.success(queuedRequest.monitorId, {
+						statusCode: response.status,
+						responseHeaders,
+						responseBody: data,
+					})
 					queuedRequest.resolve(data)
 				} else {
 					const errorData = await response.json().catch(() => ({}))
+					networkMonitor.error(queuedRequest.monitorId, {
+						statusCode: response.status,
+						responseHeaders,
+						responseBody: errorData,
+						errorMessage:
+							errorData.error?.message ||
+							`HTTP Error: ${response.status}`,
+					})
 					queuedRequest.reject({
 						message:
 							errorData.error?.message ||
@@ -63,6 +144,12 @@ class HttpClient {
 					} as ApiError)
 				}
 			} catch (error) {
+				networkMonitor.error(queuedRequest.monitorId, {
+					errorMessage:
+						error instanceof Error
+							? error.message
+							: 'Network error occurred',
+				})
 				queuedRequest.reject(error)
 			}
 		}
@@ -73,6 +160,11 @@ class HttpClient {
 		this.requestQueue = []
 
 		for (const queuedRequest of requests) {
+			networkMonitor.error(queuedRequest.monitorId, {
+				statusCode: error.status,
+				responseBody: error.details,
+				errorMessage: error.message,
+			})
 			queuedRequest.reject(error)
 		}
 	}
@@ -105,12 +197,50 @@ class HttpClient {
 
 		config.signal = controller.signal
 
+		const monitorId = this.startMonitorEntry(url, config)
+		let monitorFinalized = false
+
+		const finalizeSuccess = (
+			statusCode: number,
+			headers?: Record<string, string>,
+			body?: any,
+		) => {
+			if (monitorFinalized) {
+				return
+			}
+			monitorFinalized = true
+			networkMonitor.success(monitorId, {
+				statusCode,
+				responseHeaders: headers,
+				responseBody: body,
+			})
+		}
+
+		const finalizeError = (
+			statusCode?: number,
+			headers?: Record<string, string>,
+			body?: any,
+			message?: string,
+		) => {
+			if (monitorFinalized) {
+				return
+			}
+			monitorFinalized = true
+			networkMonitor.error(monitorId, {
+				statusCode,
+				responseHeaders: headers,
+				responseBody: body,
+				errorMessage: message,
+			})
+		}
+
 		try {
 			const response = await fetch(url, config)
 			clearTimeout(timeoutId)
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({}))
+				const responseHeaders = this.normalizeHeaders(response.headers)
 
 				if (response.status === 401) {
 					if (this.isRefreshing) {
@@ -122,6 +252,7 @@ class HttpClient {
 									reject,
 									url,
 									config,
+									monitorId,
 								})
 							},
 						)
@@ -143,6 +274,14 @@ class HttpClient {
 								status: response.status,
 								details: errorData,
 							} as ApiError)
+
+							finalizeError(
+								response.status,
+								responseHeaders,
+								errorData,
+								errorData.error?.message ||
+									`HTTP Error: ${response.status}`,
+							)
 
 							throw {
 								message:
@@ -169,15 +308,53 @@ class HttpClient {
 							}
 
 							const retryResponse = await fetch(url, retryConfig)
+							const retryHeaders = this.normalizeHeaders(
+								retryResponse.headers,
+							)
+
 							if (retryResponse.ok) {
 								const retryData = await retryResponse.json()
+								finalizeSuccess(
+									retryResponse.status,
+									retryHeaders,
+									retryData,
+								)
 								return retryData
 							}
+
+							const retryErrorData = await retryResponse
+								.json()
+								.catch(() => ({}))
+							finalizeError(
+								retryResponse.status,
+								retryHeaders,
+								retryErrorData,
+								retryErrorData.error?.message ||
+									`HTTP Error: ${retryResponse.status}`,
+							)
+
+							throw {
+								message:
+									retryErrorData.error?.message ||
+									`HTTP Error: ${retryResponse.status}`,
+								code:
+									retryErrorData.error?.code || 'HTTP_ERROR',
+								status: retryResponse.status,
+								details: retryErrorData,
+							} as ApiError
 						}
 					} finally {
 						this.isRefreshing = false
 					}
 				}
+
+				finalizeError(
+					response.status,
+					responseHeaders,
+					errorData,
+					errorData.error?.message ||
+						`HTTP Error: ${response.status}`,
+				)
 
 				throw {
 					message:
@@ -190,18 +367,33 @@ class HttpClient {
 			}
 
 			const data = await response.json()
+			const responseHeaders = this.normalizeHeaders(response.headers)
+			finalizeSuccess(response.status, responseHeaders, data)
 			return data
 		} catch (error: any) {
 			clearTimeout(timeoutId)
 
 			if (error.name === 'AbortError') {
+				finalizeError(
+					undefined,
+					undefined,
+					undefined,
+					'Request aborted',
+				)
 				throw error
 			}
 
 			if (error.message && error.status) {
+				finalizeError(
+					error.status,
+					undefined,
+					error.details,
+					error.message,
+				)
 				throw error as ApiError
 			}
 
+			finalizeError(0, undefined, error, error.message)
 			throw {
 				message: error.message || 'Network error occurred',
 				status: 0,
