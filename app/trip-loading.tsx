@@ -141,8 +141,6 @@ export default function TripLoadingScreen() {
 					abortControllerRef.current?.signal,
 				)
 
-				console.log({ createdTrip: JSON.stringify(response) })
-
 				setTripDetails(response)
 
 				const currentAppState = AppState.currentState
