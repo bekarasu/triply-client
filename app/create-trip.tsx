@@ -5,7 +5,7 @@ import { Criteria } from '@/services/recommendation/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
 	Alert,
 	KeyboardAvoidingView,
@@ -40,6 +40,7 @@ export default function CreateTripScreen() {
 		removeCity,
 		reorderCities,
 		selectedCity,
+		setSelectedCity,
 	} = useTripContext()
 
 	const [searchQuery, setSearchQuery] = useState('')
@@ -52,11 +53,32 @@ export default function CreateTripScreen() {
 		visible: false,
 		city: null,
 	})
+	const [pendingSelectedCity, setPendingSelectedCity] = useState<City | null>(
+		null,
+	)
 	const [isSearching, setIsSearching] = useState(false)
 	const [hasSearched, setHasSearched] = useState(false)
-	const [tripDuration, setTripDuration] = useState<number | null>(0)
 	const [showDatePicker, setShowDatePicker] = useState(false)
+	const [isFinalizing, setIsFinalizing] = useState(false)
 	const router = useRouter()
+	const isMounted = useRef(true)
+	const handledSelectedCityId = useRef<number | null>(null)
+
+	useEffect(() => {
+		return () => {
+			isMounted.current = false
+		}
+	}, [])
+
+	const tripDuration = useMemo(() => {
+		if (selectedCities.length === 0) {
+			return null
+		}
+		return selectedCities.reduce((total, cityWithCriteria) => {
+			const duration = cityWithCriteria.data.duration
+			return total + (Number.isFinite(duration) ? duration : 0)
+		}, 0)
+	}, [selectedCities])
 
 	const handleSearch = useCallback(async () => {
 		if (searchQuery.trim()) {
@@ -83,9 +105,27 @@ export default function CreateTripScreen() {
 
 	useEffect(() => {
 		if (selectedCity) {
-			setCriteriaModal({ visible: true, city: selectedCity })
+			if (handledSelectedCityId.current === selectedCity.id) {
+				return
+			}
+			// Prevent duplicate handling when effects replay (e.g., StrictMode mount checks)
+			handledSelectedCityId.current = selectedCity.id
+			setPendingSelectedCity(selectedCity)
+			setSelectedCity(null) // Clear global selection so fresh visits stay clean
+		} else {
+			handledSelectedCityId.current = null
 		}
-	}, [selectedCity])
+	}, [selectedCity, setSelectedCity])
+
+	useEffect(() => {
+		if (pendingSelectedCity) {
+			setCriteriaModal({
+				visible: true,
+				city: pendingSelectedCity,
+			})
+			setPendingSelectedCity(null)
+		}
+	}, [pendingSelectedCity])
 
 	const loadActivityOptions = async () => {
 		try {
@@ -180,10 +220,12 @@ export default function CreateTripScreen() {
 		setCriteriaModal({ visible: false, city: null })
 		setSearchResults([])
 		setSearchQuery('')
-		setTripDuration((tripDuration || 0) + Number.parseInt(data.duration))
 	}
 
 	const handleFinalizeTripSelection = async () => {
+		if (isFinalizing) {
+			return
+		}
 		if (!tripStartDate) {
 			Alert.alert(
 				'Missing Information',
@@ -201,6 +243,7 @@ export default function CreateTripScreen() {
 		}
 
 		try {
+			setIsFinalizing(true)
 			const primaryCity = selectedCities[0].city
 			const storageData = {
 				tripStartDate: formatDateForStorage(tripStartDate),
@@ -221,6 +264,10 @@ export default function CreateTripScreen() {
 		} catch (error) {
 			Logger.error('Error storing cities data:', error)
 			Alert.alert('Error', 'Failed to prepare trip. Please try again.')
+		} finally {
+			if (isMounted.current) {
+				setIsFinalizing(false)
+			}
 		}
 	}
 
@@ -370,6 +417,7 @@ export default function CreateTripScreen() {
 						formatDateForDisplay={formatDateForDisplay}
 						onCitiesReorder={handleCitiesReorder}
 						maxCities={MAX_TRIP_CITIES}
+						isFinalizing={isFinalizing}
 					/>
 				</ScrollView>
 			</KeyboardAvoidingView>

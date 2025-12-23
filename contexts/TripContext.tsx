@@ -18,7 +18,7 @@ interface TripContextData {
 	selectedCities: CityWithCriteria[]
 	tripStartDate: Date
 	tripDetails: TripDetails | null
-	setSelectedCity: (city: City) => void
+	setSelectedCity: (city: City | null) => void
 	setSelectedCities: (cities: CityWithCriteria[]) => void
 	setTripStartDate: (date: Date) => void
 	setTripDetails: (tripDetails: TripDetails | null) => void

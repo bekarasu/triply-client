@@ -1,4 +1,5 @@
 import Card from '@/components/ui/Card'
+import { useTripContext } from '@/contexts/TripContext'
 import { Logger } from '@/services/logger'
 import { tripService } from '@/services/trip/service'
 import { MyTrip } from '@/services/trip/types'
@@ -19,6 +20,7 @@ export default function MyTripsScreen() {
 	const [trips, setTrips] = useState<MyTrip[]>([])
 	const [loading, setLoading] = useState(true)
 	const router = useRouter()
+	const { clearTripData } = useTripContext()
 
 	useEffect(() => {
 		loadMyTrips()
@@ -50,6 +52,11 @@ export default function MyTripsScreen() {
 			pathname: '/trip-details',
 			params: { tripId, from: 'my-trips' },
 		})
+	}
+
+	const handlePlanNewTrip = () => {
+		clearTripData()
+		router.replace('/create-trip')
 	}
 
 	const getCityNames = (trip: MyTrip) => {
@@ -115,7 +122,7 @@ export default function MyTripsScreen() {
 						</Text>
 						<TouchableOpacity
 							style={styles.createButton}
-							onPress={() => router.replace('/create-trip')}
+							onPress={handlePlanNewTrip}
 						>
 							<Text style={styles.createButtonText}>
 								Plan Your First Trip
@@ -254,7 +261,7 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.05,
 		shadowRadius: 8,
 		elevation: 2,
-    marginBottom: 15,
+		marginBottom: 15,
 	},
 	backButton: {
 		width: 40,

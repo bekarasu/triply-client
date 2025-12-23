@@ -1,7 +1,13 @@
 import { City } from '@/services/city/types'
 import { Criteria } from '@/services/recommendation/types'
 import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import {
+	ActivityIndicator,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
 	runOnJS,
@@ -28,6 +34,7 @@ interface CreateTripPlanOverviewProps {
 	formatDateForDisplay: (date: Date | null) => string
 	onCitiesReorder: (reorderedCities: CityWithCriteria[]) => void
 	maxCities: number
+	isFinalizing: boolean
 }
 
 export default function CreateTripPlanOverview({
@@ -39,6 +46,7 @@ export default function CreateTripPlanOverview({
 	formatDateForDisplay,
 	onCitiesReorder,
 	maxCities,
+	isFinalizing,
 }: CreateTripPlanOverviewProps) {
 	const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
@@ -196,13 +204,30 @@ export default function CreateTripPlanOverview({
 			</View>
 
 			<TouchableOpacity
-				style={styles.finalizeButton}
+				style={[
+					styles.finalizeButton,
+					isFinalizing && styles.finalizeButtonDisabled,
+				]}
 				onPress={onFinalizeTripSelection}
+				disabled={isFinalizing}
 			>
-				<Text style={styles.finalizeButtonText}>
-					Continue with {selectedCities.length}{' '}
-					{selectedCities.length === 1 ? 'City' : 'Cities'}
-				</Text>
+				{isFinalizing ? (
+					<View style={styles.finalizingContent}>
+						<ActivityIndicator
+							size="small"
+							color="#fff"
+							style={styles.finalizingSpinner}
+						/>
+						<Text style={styles.finalizeButtonText}>
+							Preparing trip...
+						</Text>
+					</View>
+				) : (
+					<Text style={styles.finalizeButtonText}>
+						Continue with {selectedCities.length}{' '}
+						{selectedCities.length === 1 ? 'City' : 'Cities'}
+					</Text>
+				)}
 			</TouchableOpacity>
 		</View>
 	)
@@ -352,6 +377,16 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.3,
 		shadowRadius: 8,
 		elevation: 4,
+	},
+	finalizeButtonDisabled: {
+		opacity: 0.7,
+	},
+	finalizingContent: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	finalizingSpinner: {
+		marginRight: 8,
 	},
 	finalizeButtonText: {
 		color: '#fff',

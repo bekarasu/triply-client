@@ -30,7 +30,7 @@ export default function HomeScreen() {
 	const [showProfileMenu, setShowProfileMenu] = useState(false)
 	const [popularCities, setPopularCities] = useState<City[]>([])
 	const [upcomingTrips, setUpcomingTrips] = useState<TripOverview[]>([])
-	const { setSelectedCity } = useTripContext()
+	const { setSelectedCity, clearTripData } = useTripContext()
 	const router = useRouter()
 
 	useEffect(() => {
@@ -211,6 +211,7 @@ export default function HomeScreen() {
 							<TouchableOpacity
 								style={styles.primaryButton}
 								onPress={() => {
+									clearTripData()
 									router.push('/create-trip')
 								}}
 							>
@@ -444,6 +445,7 @@ export default function HomeScreen() {
 											key={city.id}
 											style={styles.featuredCard}
 											onPress={() => {
+												clearTripData()
 												setSelectedCity(city)
 												router.push({
 													pathname: '/create-trip',
