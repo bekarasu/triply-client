@@ -107,7 +107,7 @@ export default function MyTripsScreen() {
 						<Ionicons
 							name="airplane-outline"
 							size={64}
-							color="#fff"
+							color="#6b7280"
 						/>
 						<Text style={styles.emptyTitle}>No trips yet</Text>
 						<Text style={styles.emptyDescription}>
@@ -115,7 +115,7 @@ export default function MyTripsScreen() {
 						</Text>
 						<TouchableOpacity
 							style={styles.createButton}
-							onPress={() => router.push('/create-trip')}
+							onPress={() => router.replace('/create-trip')}
 						>
 							<Text style={styles.createButtonText}>
 								Plan Your First Trip
@@ -302,13 +302,13 @@ const styles = StyleSheet.create({
 	emptyTitle: {
 		fontSize: 24,
 		fontWeight: '700',
-		color: '#fff',
+		color: '#6b7280',
 		marginTop: 20,
 		marginBottom: 8,
 	},
 	emptyDescription: {
 		fontSize: 16,
-		color: 'rgba(255, 255, 255, 0.8)',
+		color: '#6b7280',
 		marginBottom: 32,
 	},
 	createButton: {
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
 	createButtonText: {
 		fontSize: 16,
 		fontWeight: '600',
-		color: '#8B5CF6',
+		color: '#6b7280',
 	},
 	tripCard: {
 		marginBottom: 16,

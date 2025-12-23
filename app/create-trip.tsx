@@ -24,6 +24,8 @@ import PopularCities from '../components/create-trip/PopularCity'
 import { CityWithCriteria, useTripContext } from '../contexts/TripContext'
 import { City } from '../services/city/types'
 
+const MAX_TRIP_CITIES = 5
+
 interface CriteriaModalState {
 	visible: boolean
 	city: City | null
@@ -91,7 +93,6 @@ export default function CreateTripScreen() {
 				await recommendationService.getRecommendationCriterias()
 
 			criterias.map((c) => {
-				console.log(c)
 				c.name = c.name.replaceAll('_', ' ')
 				return c
 			})
@@ -135,6 +136,13 @@ export default function CreateTripScreen() {
 			// Remove city from selection
 			removeCity(city.id)
 		} else {
+			if (selectedCities.length >= MAX_TRIP_CITIES) {
+				Alert.alert(
+					'City Limit Reached',
+					`You can add up to ${MAX_TRIP_CITIES} cities per trip. Remove a city before adding a new one.`,
+				)
+				return
+			}
 			// Open criteria modal for new city
 			setCriteriaModal({ visible: true, city })
 		}
@@ -152,6 +160,14 @@ export default function CreateTripScreen() {
 			criterias: Criteria[]
 		},
 	) => {
+		if (selectedCities.length >= MAX_TRIP_CITIES) {
+			Alert.alert(
+				'City Limit Reached',
+				`You can add up to ${MAX_TRIP_CITIES} cities per trip. Remove a city before adding a new one.`,
+			)
+			return
+		}
+
 		const newCityWithCriteria: CityWithCriteria = {
 			city,
 			data: {
@@ -353,6 +369,7 @@ export default function CreateTripScreen() {
 						onFinalizeTripSelection={handleFinalizeTripSelection}
 						formatDateForDisplay={formatDateForDisplay}
 						onCitiesReorder={handleCitiesReorder}
+						maxCities={MAX_TRIP_CITIES}
 					/>
 				</ScrollView>
 			</KeyboardAvoidingView>

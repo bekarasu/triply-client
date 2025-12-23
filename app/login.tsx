@@ -1,7 +1,6 @@
 import { authService } from '@/services/auth/service'
 import { ApiError } from '@/services/http-client'
 import { profileService } from '@/services/profile/service'
-import { ENV_CONFIG } from '@/utils/env-config'
 import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import {
@@ -69,9 +68,13 @@ export default function LoginScreen() {
 				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 			>
 				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-					<ScrollView style={styles.scrollView}>
+					<ScrollView
+						style={styles.scrollView}
+						contentContainerStyle={styles.scrollContent}
+					>
 						<View style={styles.content}>
-							{/* <View style={styles.envContainer}>
+							<View style={styles.formCard}>
+								{/* <View style={styles.envContainer}>
 								<Text style={styles.envTitle}>
 									Environment Configuration:
 								</Text>
@@ -88,87 +91,88 @@ export default function LoginScreen() {
 								</Text>
 							</View> */}
 
-							<View style={styles.headerSection}>
-								<View style={styles.logoContainer}>
-									<Text style={styles.logoText}>✈️</Text>
-								</View>
-								<Text style={styles.title}>
-									Welcome to Triply
-								</Text>
-								<Text style={styles.subtitle}>
-									Sign in to start planning your amazing
-									adventures
-								</Text>
-							</View>
-
-							<View style={styles.inputContainer}>
-								<TextInput
-									style={styles.input}
-									placeholder="Email"
-									value={email}
-									onChangeText={setEmail}
-									keyboardType="email-address"
-									autoCapitalize="none"
-									autoCorrect={false}
-									autoComplete="email"
-									textContentType="emailAddress"
-									returnKeyType="next"
-								/>
-							</View>
-
-							<View style={styles.inputContainer}>
-								<TextInput
-									style={styles.input}
-									placeholder="Password"
-									value={password}
-									onChangeText={handlePasswordChange}
-									secureTextEntry={true}
-									autoCapitalize="none"
-									autoComplete="password"
-									textContentType="oneTimeCode"
-									autoCorrect={false}
-									blurOnSubmit={false}
-									returnKeyType="done"
-									onSubmitEditing={handleLogin}
-								/>
-							</View>
-
-							<TouchableOpacity
-								style={[
-									styles.loginButton,
-									loading && styles.loginButtonDisabled,
-								]}
-								onPress={handleLogin}
-								disabled={loading}
-							>
-								{loading ? (
-									<ActivityIndicator color="#fff" />
-								) : (
-									<Text style={styles.loginButtonText}>
-										Sign In
+								<View style={styles.headerSection}>
+									<View style={styles.logoContainer}>
+										<Text style={styles.logoText}>✈️</Text>
+									</View>
+									<Text style={styles.title}>
+										Welcome to Triply
 									</Text>
-								)}
-							</TouchableOpacity>
+									<Text style={styles.subtitle}>
+										Sign in to start planning your amazing
+										adventures
+									</Text>
+								</View>
 
-							{/* <TouchableOpacity style={styles.forgotPassword}>
+								<View style={styles.inputContainer}>
+									<TextInput
+										style={styles.input}
+										placeholder="Email"
+										value={email}
+										onChangeText={setEmail}
+										keyboardType="email-address"
+										autoCapitalize="none"
+										autoCorrect={false}
+										autoComplete="email"
+										textContentType="emailAddress"
+										returnKeyType="next"
+									/>
+								</View>
+
+								<View style={styles.inputContainer}>
+									<TextInput
+										style={styles.input}
+										placeholder="Password"
+										value={password}
+										onChangeText={handlePasswordChange}
+										secureTextEntry={true}
+										autoCapitalize="none"
+										autoComplete="password"
+										textContentType="oneTimeCode"
+										autoCorrect={false}
+										blurOnSubmit={false}
+										returnKeyType="done"
+										onSubmitEditing={handleLogin}
+									/>
+								</View>
+
+								<TouchableOpacity
+									style={[
+										styles.loginButton,
+										loading && styles.loginButtonDisabled,
+									]}
+									onPress={handleLogin}
+									disabled={loading}
+								>
+									{loading ? (
+										<ActivityIndicator color="#fff" />
+									) : (
+										<Text style={styles.loginButtonText}>
+											Sign In
+										</Text>
+									)}
+								</TouchableOpacity>
+
+								{/* <TouchableOpacity style={styles.forgotPassword}>
 					<Text style={styles.forgotPasswordText}>
 						Forgot Password?
 					</Text>
 				</TouchableOpacity> */}
 
-							<View style={styles.signupContainer}>
-								<Text style={styles.signupText}>
-									Don&apos;t have an account?{' '}
-								</Text>
-								<TouchableOpacity
-									onPress={() =>
-										router.push('/signup' as any)
-									}
-								>
-									<Text style={styles.signupLink}>
-										Sign Up
+								<View style={styles.signupContainer}>
+									<Text style={styles.signupText}>
+										Don&apos;t have an account?{' '}
 									</Text>
-								</TouchableOpacity>
+									<TouchableOpacity
+										onPress={() =>
+											router.push('/signup')
+										}
+									>
+										<Text style={styles.signupLink}>
+											Sign Up
+										</Text>
+									</TouchableOpacity>
+								</View>
 							</View>
 						</View>
 					</ScrollView>
@@ -189,10 +193,21 @@ const styles = StyleSheet.create({
 	scrollView: {
 		flex: 1,
 	},
+	scrollContent: {
+		flexGrow: 1,
+		justifyContent: 'center',
+	},
 	content: {
+		flex: 1,
+		alignItems: 'center',
+		justifyContent: 'center',
 		paddingHorizontal: 24,
 		paddingVertical: 20,
-		justifyContent: 'center',
+	},
+	formCard: {
+		width: '100%',
+		maxWidth: 420,
+		alignSelf: 'center',
 	},
 	envContainer: {
 		backgroundColor: '#f0f0f0',

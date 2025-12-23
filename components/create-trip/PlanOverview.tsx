@@ -27,6 +27,7 @@ interface CreateTripPlanOverviewProps {
 	onFinalizeTripSelection: () => void
 	formatDateForDisplay: (date: Date | null) => string
 	onCitiesReorder: (reorderedCities: CityWithCriteria[]) => void
+	maxCities: number
 }
 
 export default function CreateTripPlanOverview({
@@ -37,6 +38,7 @@ export default function CreateTripPlanOverview({
 	onFinalizeTripSelection,
 	formatDateForDisplay,
 	onCitiesReorder,
+	maxCities,
 }: CreateTripPlanOverviewProps) {
 	const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
@@ -165,9 +167,11 @@ export default function CreateTripPlanOverview({
 			)}
 			<View style={styles.citiesHeaderContainer}>
 				<Text style={styles.citiesSectionTitle}>
-					Selected Cities ({selectedCities.length})
+					Selected Cities ({selectedCities.length}/{maxCities})
 				</Text>
-				<Text style={styles.dragInstruction}>Drag to reorder</Text>
+				<Text style={styles.dragInstruction}>
+					Drag to reorder · Max {maxCities}
+				</Text>
 			</View>
 			<View style={styles.selectedGrid}>
 				{selectedCities.map((cityWithCriteria, index) => (

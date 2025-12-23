@@ -1,6 +1,5 @@
 import { Logger } from '@/services/logger'
 import { formatDateOnly } from '@/utils/date'
-import * as Notifications from 'expo-notifications'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
 import {
@@ -8,6 +7,7 @@ import {
 	Alert,
 	Animated,
 	AppState,
+	Platform,
 	SafeAreaView,
 	StyleSheet,
 	Text,
@@ -17,16 +17,26 @@ import {
 import { useTripContext } from '../contexts/TripContext'
 import { tripService } from '../services/trip/service'
 
-// Configure notification handler
-Notifications.setNotificationHandler({
-	handleNotification: async () => ({
-		shouldShowAlert: true,
-		shouldPlaySound: true,
-		shouldSetBadge: false,
-		shouldShowBanner: true,
-		shouldShowList: true,
-	}),
-})
+type ExpoNotificationsModule = typeof import('expo-notifications')
+type NotificationSubscription = { remove: () => void }
+
+const NotificationsModule: ExpoNotificationsModule | null =
+	Platform.OS === 'ios'
+		? (require('expo-notifications') as ExpoNotificationsModule)
+		: null
+
+if (NotificationsModule) {
+	// Configure notification handler only on iOS
+	NotificationsModule.setNotificationHandler({
+		handleNotification: async () => ({
+			shouldShowAlert: true,
+			shouldPlaySound: true,
+			shouldSetBadge: false,
+			shouldShowBanner: true,
+			shouldShowList: true,
+		}),
+	})
+}
 
 const loadingSteps = [
 	{
@@ -59,11 +69,13 @@ const loadingSteps = [
 export default function TripLoadingScreen() {
 	const [currentStep, setCurrentStep] = useState(0)
 	const [fadeAnim] = useState(new Animated.Value(0))
+	const [notificationsEnabled, setNotificationsEnabled] = useState(false)
+	const notificationsEnabledRef = useRef(false)
 	const abortControllerRef = useRef<AbortController | null>(null)
 	const hasCreatedTripRef = useRef(false)
 	const router = useRouter()
 	const { selectedCities, tripStartDate, setTripDetails } = useTripContext()
-	const responseListener = useRef<Notifications.Subscription | undefined>(
+	const responseListener = useRef<NotificationSubscription | undefined>(
 		undefined,
 	)
 
@@ -83,7 +95,7 @@ export default function TripLoadingScreen() {
 						if (abortControllerRef.current) {
 							abortControllerRef.current.abort()
 						}
-						router.back()
+						router.replace('/home')
 					},
 				},
 			],
@@ -91,29 +103,53 @@ export default function TripLoadingScreen() {
 	}
 
 	useEffect(() => {
-		const requestPermissions = async () => {
-			const { status } = await Notifications.requestPermissionsAsync()
+		if (!NotificationsModule) {
+			return
+		}
+
+		let isMounted = true
+
+		const setupNotifications = async () => {
+			const existingPermissions =
+				await NotificationsModule.getPermissionsAsync()
+			let status = existingPermissions.status
+
 			if (status !== 'granted') {
-				Alert.alert(
-					'Stay Updated',
-					"We'll notify you when your personalized trip is ready, even if you switch to another app.",
-				)
+				const requestedPermissions =
+					await NotificationsModule.requestPermissionsAsync()
+				status = requestedPermissions.status
+
+				if (status !== 'granted') {
+					Alert.alert(
+						'Stay Updated',
+						"We'll notify you when your personalized trip is ready, even if you switch to another app.",
+					)
+				}
+			}
+
+			const granted = status === 'granted'
+			notificationsEnabledRef.current = granted
+			if (isMounted) {
+				setNotificationsEnabled(granted)
+			}
+
+			if (granted) {
+				responseListener.current =
+					NotificationsModule.addNotificationResponseReceivedListener(
+						() => {
+							router.replace('/trip-details')
+						},
+					)
 			}
 		}
 
-		requestPermissions()
-
-		responseListener.current =
-			Notifications.addNotificationResponseReceivedListener(
-				(response) => {
-					router.replace('/trip-details')
-					return
-				},
-			)
+		setupNotifications()
 
 		return () => {
+			isMounted = false
 			if (responseListener.current) {
 				responseListener.current.remove()
+				responseListener.current = undefined
 			}
 		}
 	}, [router])
@@ -148,9 +184,14 @@ export default function TripLoadingScreen() {
 					currentAppState === 'background' ||
 					currentAppState === 'inactive'
 
-				if (isBackground) {
+				const notificationsAllowed = notificationsEnabledRef.current
+				if (
+					isBackground &&
+					NotificationsModule &&
+					notificationsAllowed
+				) {
 					Logger.log('App is in background, showing notification')
-					await Notifications.scheduleNotificationAsync({
+					await NotificationsModule.scheduleNotificationAsync({
 						content: {
 							title: 'Your Trip is Ready!',
 							body: 'Your personalized trip has been created. Tap to view details.',
@@ -167,6 +208,7 @@ export default function TripLoadingScreen() {
 			} catch (error: any) {
 				if (error.name === 'AbortError') {
 					Logger.log('Trip creation cancelled')
+					router.replace('/create-trip')
 					return
 				}
 
@@ -181,7 +223,7 @@ export default function TripLoadingScreen() {
 				Alert.alert('Trip Creation Failed', errorMessage, [
 					{
 						text: 'OK',
-						onPress: () => router.back(),
+						onPress: () => router.replace('/home'),
 					},
 				])
 			}
@@ -241,48 +283,52 @@ export default function TripLoadingScreen() {
 					<Text style={styles.cancelButtonText}>Cancel</Text>
 				</TouchableOpacity>
 
-				{/* Progress indicator */}
-				<View style={styles.progressContainer}>
-					{loadingSteps.map((_, index) => (
-						<View
-							key={index}
-							style={[
-								styles.progressDot,
-								index <= currentStep &&
-									styles.progressDotActive,
-							]}
-						/>
-					))}
+				<View style={styles.centerContent}>
+					{/* Progress indicator */}
+					<View style={styles.progressContainer}>
+						{loadingSteps.map((_, index) => (
+							<View
+								key={index}
+								style={[
+									styles.progressDot,
+									index <= currentStep &&
+										styles.progressDotActive,
+								]}
+							/>
+						))}
+					</View>
+
+					{/* Animated content */}
+					<Animated.View
+						style={[styles.animatedContent, { opacity: fadeAnim }]}
+					>
+						<Text style={styles.icon}>
+							{loadingSteps[currentStep].icon}
+						</Text>
+						<Text style={styles.title}>
+							{loadingSteps[currentStep].title}
+						</Text>
+						<Text style={styles.description}>
+							{loadingSteps[currentStep].description}
+						</Text>
+					</Animated.View>
+
+					{/* Loading spinner */}
+					<View style={styles.spinnerContainer}>
+						<ActivityIndicator size="large" color="#6366f1" />
+					</View>
+
+					{/* Bottom text */}
+					<Text style={styles.bottomText}>
+						This may take a few moments...
+					</Text>
+					<Text style={styles.backgroundTip}>
+						Need to check something else?{' '}
+						{NotificationsModule && notificationsEnabled
+							? 'You can switch apps and we will send a notification once your trip is ready.'
+							: 'You can switch apps and return here once your trip is ready.'}
+					</Text>
 				</View>
-
-				{/* Animated content */}
-				<Animated.View
-					style={[styles.animatedContent, { opacity: fadeAnim }]}
-				>
-					<Text style={styles.icon}>
-						{loadingSteps[currentStep].icon}
-					</Text>
-					<Text style={styles.title}>
-						{loadingSteps[currentStep].title}
-					</Text>
-					<Text style={styles.description}>
-						{loadingSteps[currentStep].description}
-					</Text>
-				</Animated.View>
-
-				{/* Loading spinner */}
-				<View style={styles.spinnerContainer}>
-					<ActivityIndicator size="large" color="#6366f1" />
-				</View>
-
-				{/* Bottom text */}
-				<Text style={styles.bottomText}>
-					This may take a few moments...
-				</Text>
-				<Text style={styles.backgroundTip}>
-					Need to check something else? You can switch apps and we
-					will send a friendly notification once your trip is ready.
-				</Text>
 			</View>
 		</SafeAreaView>
 	)
@@ -295,6 +341,12 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	centerContent: {
+		flex: 1,
+		width: '100%',
 		justifyContent: 'center',
 		alignItems: 'center',
 		paddingHorizontal: 32,

@@ -27,6 +27,8 @@ interface CriteriaModalProps {
 	) => void
 }
 
+const MAX_DURATION_DAYS = 15
+
 export default function CriteriaModal({
 	visible,
 	city,
@@ -88,6 +90,17 @@ export default function CriteriaModal({
 			return // Don't update state at all - character won't appear
 		}
 
+		if (text === '') {
+			setDuration('')
+			return
+		}
+
+		const numericValue = parseInt(text, 10)
+		if (numericValue > MAX_DURATION_DAYS) {
+			setDuration(MAX_DURATION_DAYS.toString())
+			return
+		}
+
 		setDuration(text)
 	}
 
@@ -106,6 +119,23 @@ export default function CriteriaModal({
 			Alert.alert(
 				'Missing Information',
 				'Please enter how long you want to stay in this city.',
+			)
+			return
+		}
+
+		const parsedDuration = parseInt(duration, 10)
+		if (Number.isNaN(parsedDuration) || parsedDuration <= 0) {
+			Alert.alert(
+				'Invalid Duration',
+				'Please enter a valid number of days greater than zero.',
+			)
+			return
+		}
+
+		if (parsedDuration > MAX_DURATION_DAYS) {
+			Alert.alert(
+				'Duration Too Long',
+				`You can stay up to ${MAX_DURATION_DAYS} days in each city.`,
 			)
 			return
 		}
@@ -198,7 +228,14 @@ export default function CriteriaModal({
 					</View>
 
 					<View style={styles.section}>
-						<Text style={styles.label}>Duration (days)</Text>
+						<View style={styles.durationLabelRow}>
+							<Text style={[styles.label, styles.durationLabel]}>
+								Duration (days)
+							</Text>
+							<Text style={styles.durationLimitText}>
+								Max {MAX_DURATION_DAYS} days per city
+							</Text>
+						</View>
 						<TextInput
 							style={styles.textInput}
 							placeholder="0"
@@ -402,6 +439,22 @@ const styles = StyleSheet.create({
 	},
 	section: {
 		marginBottom: 32,
+	},
+	durationLabelRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		marginBottom: 8,
+	},
+	durationLabel: {
+		marginBottom: 0,
+	},
+	durationLimitText: {
+		fontSize: 12,
+		fontWeight: '600',
+		color: '#9ca3af',
+		textTransform: 'uppercase',
+		letterSpacing: 0.5,
 	},
 	label: {
 		fontSize: 18,

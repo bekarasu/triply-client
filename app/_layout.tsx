@@ -7,10 +7,15 @@ import {
 import { useFonts } from 'expo-font'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { useColorScheme } from 'react-native'
+import { Platform, StyleSheet, useColorScheme } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import 'react-native-reanimated'
+import type { Edge } from 'react-native-safe-area-context'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { TripProvider } from '../contexts/TripContext'
+
+const ANDROID_CAMERA_PADDING = 12
+const ANDROID_SAFE_AREA_EDGES: Edge[] = ['top', 'left', 'right']
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme()
@@ -23,34 +28,60 @@ export default function RootLayout() {
 		return null
 	}
 
+	const safeAreaEdges =
+		Platform.OS === 'android' ? ANDROID_SAFE_AREA_EDGES : undefined
+
 	return (
-		<GestureHandlerRootView style={{ flex: 1 }}>
-			<TripProvider>
-				<ThemeProvider
-					value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-				>
-					<Stack
-						screenOptions={{
-							headerShown: false,
-						}}
-						initialRouteName="onboarding-1"
+		<GestureHandlerRootView style={styles.flex}>
+			<SafeAreaProvider>
+				<TripProvider>
+					<SafeAreaView
+						style={[
+							styles.flex,
+							Platform.OS === 'android' && styles.androidInset,
+						]}
+						edges={safeAreaEdges}
 					>
-						<Stack.Screen name="onboarding-1" />
-						<Stack.Screen name="onboarding-2" />
-						<Stack.Screen name="onboarding-3" />
-						<Stack.Screen name="login" />
-						<Stack.Screen name="signup" />
-						<Stack.Screen name="verify-otp" />
-						<Stack.Screen name="home" />
-						<Stack.Screen name="my-trips" />
-						<Stack.Screen name="create-trip" />
-						<Stack.Screen name="trip-details" />
-						<Stack.Screen name="+not-found" />
-					</Stack>
-					<StatusBar style="auto" />
-					<NetworkMonitorOverlay />
-				</ThemeProvider>
-			</TripProvider>
+						<ThemeProvider
+							value={
+								colorScheme === 'dark'
+									? DarkTheme
+									: DefaultTheme
+							}
+						>
+							<Stack
+								screenOptions={{
+									headerShown: false,
+								}}
+								initialRouteName="onboarding-1"
+							>
+								<Stack.Screen name="onboarding-1" />
+								<Stack.Screen name="onboarding-2" />
+								<Stack.Screen name="onboarding-3" />
+								<Stack.Screen name="login" />
+								<Stack.Screen name="signup" />
+								<Stack.Screen name="verify-otp" />
+								<Stack.Screen name="home" />
+								<Stack.Screen name="my-trips" />
+								<Stack.Screen name="create-trip" />
+								<Stack.Screen name="trip-details" />
+								<Stack.Screen name="+not-found" />
+							</Stack>
+							<StatusBar style="auto" />
+							<NetworkMonitorOverlay />
+						</ThemeProvider>
+					</SafeAreaView>
+				</TripProvider>
+			</SafeAreaProvider>
 		</GestureHandlerRootView>
 	)
 }
+
+const styles = StyleSheet.create({
+	flex: {
+		flex: 1,
+	},
+	androidInset: {
+		paddingTop: ANDROID_CAMERA_PADDING,
+	},
+})

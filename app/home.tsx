@@ -46,6 +46,13 @@ export default function HomeScreen() {
 			setProfile(profile)
 		} catch (error) {
 			console.error('Error loading user data:', error)
+			try {
+				await authService.logout()
+				router.replace('/login' as any)
+			} catch (error) {
+				console.error('Logout error:', error)
+			}
+			return
 		} finally {
 			setLoading(false)
 		}
@@ -204,7 +211,7 @@ export default function HomeScreen() {
 							<TouchableOpacity
 								style={styles.primaryButton}
 								onPress={() => {
-									router.push('/create-trip' as any)
+									router.push('/create-trip')
 								}}
 							>
 								<Text style={styles.primaryButtonIcon}>✈️</Text>

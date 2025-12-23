@@ -30,7 +30,7 @@ export default function TripDetailsScreen() {
 	const router = useRouter()
 	const { tripId, from } = useLocalSearchParams<{
 		tripId?: string
-		from?: RelativePathString
+		from?: any
 	}>()
 	const {
 		tripDetails: contextTripDetails,
@@ -114,13 +114,13 @@ export default function TripDetailsScreen() {
 				<TouchableOpacity
 					style={styles.backButton}
 					onPress={() => {
-						if (from) {
+						if (from && from !== '') {
 							router.replace(from)
+							clearTripData()
 							return
 						}
 
 						clearTripData()
-
 						router.replace('/home')
 					}}
 				>

@@ -152,7 +152,6 @@ export default function VerifyOtpScreen() {
 						}}
 						keyboardType="numeric"
 						maxLength={6}
-						textAlign="center"
 						autoCapitalize="none"
 						autoCorrect={false}
 					/>
@@ -243,7 +242,7 @@ const styles = StyleSheet.create({
 		fontSize: 28,
 		fontWeight: '800',
 		backgroundColor: '#fff',
-		letterSpacing: 8,
+		letterSpacing: 4,
 		color: '#1f2937',
 		shadowColor: '#6366f1',
 		shadowOffset: { width: 0, height: 4 },
