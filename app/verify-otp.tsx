@@ -1,3 +1,4 @@
+import { usePlaceholderColor } from '@/hooks/usePlaceholderColor'
 import { authService } from '@/services/auth/service'
 import { ApiError } from '@/services/http-client'
 import { Logger } from '@/services/logger'
@@ -15,6 +16,7 @@ import {
 } from 'react-native'
 
 export default function VerifyOtpScreen() {
+	const placeholderColor = usePlaceholderColor()
 	const [otpCode, setOtpCode] = useState('')
 	const [loading, setLoading] = useState(false)
 	const [resendLoading, setResendLoading] = useState(false)
@@ -142,6 +144,7 @@ export default function VerifyOtpScreen() {
 						ref={otpInputRef}
 						style={styles.otpInput}
 						placeholder="Enter 6-digit code"
+						placeholderTextColor={placeholderColor}
 						value={otpCode}
 						onChangeText={(text) => {
 							// Only allow numbers and limit to 6 digits

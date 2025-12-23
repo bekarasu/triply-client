@@ -8,10 +8,11 @@ import {
 	useLocalSearchParams,
 	useRouter,
 } from 'expo-router'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
 	ActivityIndicator,
 	Alert,
+	BackHandler,
 	SafeAreaView,
 	ScrollView,
 	StyleSheet,
@@ -41,6 +42,29 @@ export default function TripDetailsScreen() {
 	const [startDate, setStartDate] = useState<Date>(new Date())
 	const [selectedCityIndex, setSelectedCityIndex] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
+
+	const handleBackNavigation = useCallback(() => {
+		if (typeof from === 'string' && from.trim().length > 0) {
+			clearTripData()
+			router.replace(from.trim() as RelativePathString)
+			return
+		}
+
+		clearTripData()
+		router.replace('/home' as RelativePathString)
+	}, [clearTripData, from, router])
+
+	useEffect(() => {
+		const backHandler = BackHandler.addEventListener(
+			'hardwareBackPress',
+			() => {
+				handleBackNavigation()
+				return true
+			},
+		)
+
+		return () => backHandler.remove()
+	}, [handleBackNavigation])
 
 	useEffect(() => {
 		const loadTripDetails = async () => {
@@ -113,16 +137,7 @@ export default function TripDetailsScreen() {
 			<View style={styles.header}>
 				<TouchableOpacity
 					style={styles.backButton}
-					onPress={() => {
-						if (from && from !== '') {
-							router.replace(from)
-							clearTripData()
-							return
-						}
-
-						clearTripData()
-						router.replace('/home')
-					}}
+					onPress={handleBackNavigation}
 				>
 					<Text style={styles.backIcon}>←</Text>
 				</TouchableOpacity>

@@ -1,3 +1,4 @@
+import { usePlaceholderColor } from '@/hooks/usePlaceholderColor'
 import React from 'react'
 import {
 	StyleSheet,
@@ -22,8 +23,11 @@ export default function SearchBar({
 	variant = 'default',
 	size = 'medium',
 	placeholder = 'Search...',
+	placeholderTextColor,
 	...textInputProps
 }: SearchBarProps) {
+	const defaultPlaceholderColor = usePlaceholderColor()
+
 	const containerStyles = [
 		styles.container,
 		styles[variant],
@@ -40,7 +44,9 @@ export default function SearchBar({
 			<TextInput
 				style={inputStyles}
 				placeholder={placeholder}
-				placeholderTextColor="#9ca3af"
+				placeholderTextColor={
+					placeholderTextColor ?? defaultPlaceholderColor
+				}
 				{...textInputProps}
 			/>
 			{onSearchPress && (

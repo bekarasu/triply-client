@@ -20,6 +20,7 @@ const Colors = {
 		error: '#ef4444',
 		border: '#f1f5f9',
 		shadow: '#000000',
+		placeholder: '#475569',
 	},
 	dark: {
 		text: '#f9fafb',
@@ -37,6 +38,7 @@ const Colors = {
 		error: '#f87171',
 		border: '#374151',
 		shadow: '#000000',
+		placeholder: '#cbd5f5',
 	},
 }
 

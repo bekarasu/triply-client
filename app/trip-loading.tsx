@@ -7,6 +7,7 @@ import {
 	Alert,
 	Animated,
 	AppState,
+	BackHandler,
 	Platform,
 	SafeAreaView,
 	StyleSheet,
@@ -50,9 +51,9 @@ const loadingSteps = [
 		description: 'Discovering amazing places',
 	},
 	{
-		icon: '🏨',
-		title: 'Selecting accommodations',
-		description: 'Finding perfect stays',
+		icon: '🍽️',
+		title: 'Scouting food spots',
+		description: "Curating can't-miss eats",
 	},
 	{
 		icon: '🎯',
@@ -101,6 +102,18 @@ export default function TripLoadingScreen() {
 			],
 		)
 	}
+
+	useEffect(() => {
+		const backHandler = BackHandler.addEventListener(
+			'hardwareBackPress',
+			() => {
+				handleCancel()
+				return true
+			},
+		)
+
+		return () => backHandler.remove()
+	}, [])
 
 	useEffect(() => {
 		if (!NotificationsModule) {

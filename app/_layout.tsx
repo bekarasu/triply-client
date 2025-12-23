@@ -7,7 +7,7 @@ import {
 import { useFonts } from 'expo-font'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { Platform, StyleSheet, useColorScheme } from 'react-native'
+import { Platform, StyleSheet, TextInput, useColorScheme } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import 'react-native-reanimated'
 import type { Edge } from 'react-native-safe-area-context'
@@ -16,6 +16,18 @@ import { TripProvider } from '../contexts/TripContext'
 
 const ANDROID_CAMERA_PADDING = 12
 const ANDROID_SAFE_AREA_EDGES: Edge[] = ['top', 'left', 'right']
+const DEFAULT_PLACEHOLDER_COLOR = '#94a3b8'
+
+const textInput = TextInput as unknown as {
+	defaultProps?: Record<string, unknown>
+}
+if (!textInput.defaultProps) {
+	textInput.defaultProps = {}
+}
+
+if (!textInput.defaultProps.placeholderTextColor) {
+	textInput.defaultProps.placeholderTextColor = DEFAULT_PLACEHOLDER_COLOR
+}
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme()

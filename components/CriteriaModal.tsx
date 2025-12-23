@@ -1,3 +1,4 @@
+import { usePlaceholderColor } from '@/hooks/usePlaceholderColor'
 import { Criteria } from '@/services/recommendation/types'
 import React, { useCallback, useState } from 'react'
 import {
@@ -36,6 +37,7 @@ export default function CriteriaModal({
 	onClose,
 	onSubmit,
 }: CriteriaModalProps) {
+	const placeholderColor = usePlaceholderColor()
 	const [budget, setBudget] = useState('')
 	const [duration, setDuration] = useState('')
 	const [selectedCriterias, setSelectedCriterias] = useState<Criteria[]>([])
@@ -219,6 +221,7 @@ export default function CriteriaModal({
 							<TextInput
 								style={styles.textInputWithSuffix}
 								placeholder="0"
+								placeholderTextColor={placeholderColor}
 								value={budget}
 								onChangeText={handleBudgetChange}
 								keyboardType="decimal-pad"
@@ -239,6 +242,7 @@ export default function CriteriaModal({
 						<TextInput
 							style={styles.textInput}
 							placeholder="0"
+							placeholderTextColor={placeholderColor}
 							value={duration}
 							onChangeText={handleDurationChange}
 							keyboardType="number-pad"

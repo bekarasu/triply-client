@@ -1,3 +1,4 @@
+import { usePlaceholderColor } from '@/hooks/usePlaceholderColor'
 import { authService } from '@/services/auth/service'
 import { ApiError } from '@/services/http-client'
 import { profileService } from '@/services/profile/service'
@@ -20,6 +21,7 @@ import {
 } from 'react-native'
 
 export default function LoginScreen() {
+	const placeholderColor = usePlaceholderColor()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false)
@@ -108,6 +110,7 @@ export default function LoginScreen() {
 									<TextInput
 										style={styles.input}
 										placeholder="Email"
+										placeholderTextColor={placeholderColor}
 										value={email}
 										onChangeText={setEmail}
 										keyboardType="email-address"
@@ -123,6 +126,7 @@ export default function LoginScreen() {
 									<TextInput
 										style={styles.input}
 										placeholder="Password"
+										placeholderTextColor={placeholderColor}
 										value={password}
 										onChangeText={handlePasswordChange}
 										secureTextEntry={true}

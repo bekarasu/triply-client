@@ -1,3 +1,4 @@
+import { usePlaceholderColor } from '@/hooks/usePlaceholderColor'
 import { authService } from '@/services/auth/service'
 import { ApiError } from '@/services/http-client'
 import { useRouter } from 'expo-router'
@@ -19,6 +20,7 @@ import {
 } from 'react-native'
 
 export default function SignupScreen() {
+	const placeholderColor = usePlaceholderColor()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [confirmPassword, setConfirmPassword] = useState('')
@@ -125,6 +127,7 @@ export default function SignupScreen() {
 									<TextInput
 										style={styles.input}
 										placeholder="First Name"
+										placeholderTextColor={placeholderColor}
 										value={firstName}
 										onChangeText={setFirstName}
 										autoCapitalize="words"
@@ -143,6 +146,7 @@ export default function SignupScreen() {
 									<TextInput
 										style={styles.input}
 										placeholder="Last Name"
+										placeholderTextColor={placeholderColor}
 										value={lastName}
 										onChangeText={setLastName}
 										autoCapitalize="words"
@@ -158,6 +162,7 @@ export default function SignupScreen() {
 								<TextInput
 									style={styles.input}
 									placeholder="Email"
+									placeholderTextColor={placeholderColor}
 									value={email}
 									onChangeText={setEmail}
 									keyboardType="email-address"
@@ -173,6 +178,7 @@ export default function SignupScreen() {
 								<TextInput
 									style={styles.input}
 									placeholder="Password"
+									placeholderTextColor={placeholderColor}
 									value={password}
 									onChangeText={setPassword}
 									secureTextEntry={true}
@@ -189,6 +195,7 @@ export default function SignupScreen() {
 								<TextInput
 									style={styles.input}
 									placeholder="Confirm Password"
+									placeholderTextColor={placeholderColor}
 									value={confirmPassword}
 									onChangeText={setConfirmPassword}
 									secureTextEntry={true}
