@@ -1,4 +1,5 @@
 import { DayCard } from '@/components/trip/DayCard'
+import { TripMap } from '@/components/trip/TripMap'
 import { useTripContext } from '@/contexts/TripContext'
 import { Logger } from '@/services/logger'
 import { tripService } from '@/services/trip/service'
@@ -69,17 +70,29 @@ export default function TripDetailsScreen() {
 	useEffect(() => {
 		const loadTripDetails = async () => {
 			try {
+				Logger.log('Loading trip details', { tripId, hasContextDetails: !!contextTripDetails })
+
 				if (tripId) {
 					// Fetch trip from API
+					Logger.log('Fetching trip from API with ID:', tripId)
 					const details = await tripService.getTripById(tripId)
+					Logger.log('Received trip details from API:', JSON.stringify(details))
+
+					if (!details || !details.cities || details.cities.length === 0) {
+						throw new Error('Invalid trip data received from API')
+					}
+
 					setTripDetails(details)
 					// Use current date as fallback when fetching from API
 					// In a real app, you might want to fetch this from the backend
 					setStartDate(new Date())
 				} else if (contextTripDetails) {
 					// Use context data if no tripId (coming from create-trip)
+					Logger.log('Using trip details from context')
 					setTripDetails(contextTripDetails)
 					setStartDate(tripStartDate)
+				} else {
+					Logger.log('No tripId or context trip details available')
 				}
 			} catch (error) {
 				Logger.error('Error loading trip details:', error)
@@ -112,7 +125,7 @@ export default function TripDetailsScreen() {
 		)
 	}
 
-	if (!tripDetails) {
+	if (!tripDetails || !tripDetails.cities || tripDetails.cities.length === 0) {
 		return (
 			<SafeAreaView style={styles.container}>
 				<View style={styles.emptyState}>
@@ -121,14 +134,41 @@ export default function TripDetailsScreen() {
 					<Text style={styles.emptyDescription}>
 						Start planning your adventure!
 					</Text>
+					<TouchableOpacity
+						style={styles.primaryButton}
+						onPress={() => router.replace('/home')}
+					>
+						<Text style={styles.primaryButtonText}>Go Home</Text>
+					</TouchableOpacity>
 				</View>
 			</SafeAreaView>
 		)
 	}
 
 	const selectedCity = tripDetails.cities[selectedCityIndex]
+
+	if (!selectedCity || !selectedCity.days) {
+		return (
+			<SafeAreaView style={styles.container}>
+				<View style={styles.emptyState}>
+					<Text style={styles.emptyIcon}>⚠️</Text>
+					<Text style={styles.emptyTitle}>Invalid Trip Data</Text>
+					<Text style={styles.emptyDescription}>
+						Unable to display this trip. Please try again.
+					</Text>
+					<TouchableOpacity
+						style={styles.primaryButton}
+						onPress={() => router.replace('/home')}
+					>
+						<Text style={styles.primaryButtonText}>Go Home</Text>
+					</TouchableOpacity>
+				</View>
+			</SafeAreaView>
+		)
+	}
+
 	const totalDays = tripDetails.cities.reduce(
-		(sum, city) => sum + city.days.length,
+		(sum, city) => sum + (city.days?.length || 0),
 		0,
 	)
 
@@ -184,7 +224,7 @@ export default function TripDetailsScreen() {
 									</Text>
 									<View style={styles.cityTabBadge}>
 										<Text style={styles.cityTabBadgeText}>
-											{city.days.length}d
+											{city.days?.length || 0}d
 										</Text>
 									</View>
 								</TouchableOpacity>
@@ -192,6 +232,10 @@ export default function TripDetailsScreen() {
 						</ScrollView>
 					</View>
 				)}
+				<TripMap
+					cities={tripDetails.cities}
+					selectedCityIndex={selectedCityIndex}
+				/>
 				<View style={styles.cityHeader}>
 					<View style={styles.cityHeaderLeft}>
 						<Text style={styles.cityIcon}>📍</Text>
@@ -211,7 +255,7 @@ export default function TripDetailsScreen() {
 					{selectedCity.days.map((day, index) => {
 						const daysBefore = tripDetails.cities
 							.slice(0, selectedCityIndex)
-							.reduce((sum, city) => sum + city.days.length, 0)
+							.reduce((sum, city) => sum + (city.days?.length || 0), 0)
 						const currentDayOffset = daysBefore + index + 1
 						const dayDate = calculateDayDate(
 							startDate,

@@ -20,6 +20,9 @@ export interface CreateTripResponse {
 export interface Place {
 	name: string
 	description: string
+	priorityLevel?: number
+	latitude?: number
+	longitude?: number
 }
 
 export interface FoodPlace {
