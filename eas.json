@@ -11,10 +11,10 @@
 				"buildType": "apk"
 			},
 			"env": {
-				"EXPO_PUBLIC_RECOMMENDATION_SERVICE_URL": "http://ec2-18-196-2-177.eu-central-1.compute.amazonaws.com/recommendation",
-				"EXPO_PUBLIC_USER_SERVICE_URL": "http://ec2-18-196-2-177.eu-central-1.compute.amazonaws.com/user",
-				"EXPO_PUBLIC_TRAVEL_SERVICE_URL": "http://ec2-18-196-2-177.eu-central-1.compute.amazonaws.com/travel",
-				"EXPO_PUBLIC_ENABLE_NETWORK_MONITOR": "true",
+				"EXPO_PUBLIC_RECOMMENDATION_SERVICE_URL": "http://localhost:3001/recommendation",
+				"EXPO_PUBLIC_USER_SERVICE_URL": "http://localhost:3002/user",
+				"EXPO_PUBLIC_TRAVEL_SERVICE_URL": "http://localhost:3003/travel",
+				"EXPO_PUBLIC_ENABLE_NETWORK_MONITOR": "false",
 				"EXPO_PUBLIC_API_TIMEOUT": "10000",
 				"EXPO_PUBLIC_NODE_ENV": "development"
 			}

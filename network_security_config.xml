@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+  <!-- Allow cleartext ONLY for this domain -->
+  <domain-config cleartextTrafficPermitted="true">
+    <domain includeSubdomains="true"></domain>
+  </domain-config>
+
+  <!-- Everything else remains HTTPS-only -->
+</network-security-config>
