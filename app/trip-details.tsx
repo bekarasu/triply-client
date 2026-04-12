@@ -4,11 +4,14 @@ import { useTripContext } from '@/contexts/TripContext'
 import { Logger } from '@/services/logger'
 import { tripService } from '@/services/trip/service'
 import { TripDetails } from '@/services/trip/types'
+import { getStoreUrl } from '@/utils/store-links'
+import * as Linking from 'expo-linking'
 import {
 	RelativePathString,
 	useLocalSearchParams,
 	useRouter,
 } from 'expo-router'
+import * as StoreReview from 'expo-store-review'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
 	ActivityIndicator,
@@ -28,6 +31,10 @@ const calculateDayDate = (startDate: Date, dayNumber: number): Date => {
 	return date
 }
 
+const openStore = async () => {
+	await Linking.openURL(getStoreUrl())
+}
+
 export default function TripDetailsScreen() {
 	const router = useRouter()
 	const { tripId, from } = useLocalSearchParams<{
@@ -43,6 +50,7 @@ export default function TripDetailsScreen() {
 	const [startDate, setStartDate] = useState<Date>(new Date())
 	const [selectedCityIndex, setSelectedCityIndex] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
+	const hasShownStorePromptRef = React.useRef(false)
 
 	const handleBackNavigation = useCallback(() => {
 		if (typeof from === 'string' && from.trim().length > 0) {
@@ -70,15 +78,25 @@ export default function TripDetailsScreen() {
 	useEffect(() => {
 		const loadTripDetails = async () => {
 			try {
-				Logger.log('Loading trip details', { tripId, hasContextDetails: !!contextTripDetails })
+				Logger.log('Loading trip details', {
+					tripId,
+					hasContextDetails: !!contextTripDetails,
+				})
 
 				if (tripId) {
 					// Fetch trip from API
 					Logger.log('Fetching trip from API with ID:', tripId)
 					const details = await tripService.getTripById(tripId)
-					Logger.log('Received trip details from API:', JSON.stringify(details))
+					Logger.log(
+						'Received trip details from API:',
+						JSON.stringify(details),
+					)
 
-					if (!details || !details.cities || details.cities.length === 0) {
+					if (
+						!details ||
+						!details.cities ||
+						details.cities.length === 0
+					) {
 						throw new Error('Invalid trip data received from API')
 					}
 
@@ -114,6 +132,59 @@ export default function TripDetailsScreen() {
 		loadTripDetails()
 	}, [tripId, contextTripDetails, router, tripStartDate])
 
+	useEffect(() => {
+		if (isLoading || !tripDetails || hasShownStorePromptRef.current) {
+			return
+		}
+
+		if (from !== '/create-trip') {
+			return
+		}
+
+		hasShownStorePromptRef.current = true
+		const promptTimer = setTimeout(() => {
+			Alert.alert(
+				'Did you like Triply?',
+				'Did you like the app and your trip suggestion?',
+				[
+					{
+						text: 'No',
+						style: 'cancel',
+					},
+					{
+						text: 'Yes',
+						onPress: async () => {
+							try {
+								const canRequestReview =
+									await StoreReview.hasAction()
+
+								if (canRequestReview) {
+									await StoreReview.requestReview()
+									return
+								}
+
+								await openStore()
+							} catch (error) {
+								Logger.error(
+									'Failed to request native review:',
+									error,
+								)
+								openStore().catch((fallbackError) => {
+									Logger.error(
+										'Failed to open store fallback:',
+										fallbackError,
+									)
+								})
+							}
+						},
+					},
+				],
+			)
+		}, 10 * 1000)
+
+		return () => clearTimeout(promptTimer)
+	}, [from, isLoading, tripDetails])
+
 	if (isLoading) {
 		return (
 			<SafeAreaView style={styles.container}>
@@ -125,7 +196,11 @@ export default function TripDetailsScreen() {
 		)
 	}
 
-	if (!tripDetails || !tripDetails.cities || tripDetails.cities.length === 0) {
+	if (
+		!tripDetails ||
+		!tripDetails.cities ||
+		tripDetails.cities.length === 0
+	) {
 		return (
 			<SafeAreaView style={styles.container}>
 				<View style={styles.emptyState}>
@@ -255,7 +330,10 @@ export default function TripDetailsScreen() {
 					{selectedCity.days.map((day, index) => {
 						const daysBefore = tripDetails.cities
 							.slice(0, selectedCityIndex)
-							.reduce((sum, city) => sum + (city.days?.length || 0), 0)
+							.reduce(
+								(sum, city) => sum + (city.days?.length || 0),
+								0,
+							)
 						const currentDayOffset = daysBefore + index + 1
 						const dayDate = calculateDayDate(
 							startDate,

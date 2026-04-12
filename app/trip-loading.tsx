@@ -215,7 +215,10 @@ export default function TripLoadingScreen() {
 				} else {
 					setTimeout(() => {
 						Logger.log('Navigating to trip details')
-						router.replace('/trip-details')
+						router.replace({
+							pathname: '/trip-details',
+							params: { from: '/create-trip' },
+						})
 					}, 2000)
 				}
 			} catch (error: any) {
