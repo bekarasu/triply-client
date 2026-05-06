@@ -1,5 +1,5 @@
 import { CityItinerary, Place } from '@/services/trip/types'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import MapView, { Marker, Region } from 'react-native-maps'
 
@@ -17,6 +17,41 @@ interface PlaceMarker {
 	coordinate: {
 		latitude: number
 		longitude: number
+	}
+}
+
+interface MapErrorBoundaryProps {
+	children: React.ReactNode
+	onMapRenderError: () => void
+}
+
+interface MapErrorBoundaryState {
+	hasError: boolean
+}
+
+class MapErrorBoundary extends React.Component<
+	MapErrorBoundaryProps,
+	MapErrorBoundaryState
+> {
+	constructor(props: MapErrorBoundaryProps) {
+		super(props)
+		this.state = { hasError: false }
+	}
+
+	static getDerivedStateFromError(): MapErrorBoundaryState {
+		return { hasError: true }
+	}
+
+	componentDidCatch() {
+		this.props.onMapRenderError()
+	}
+
+	render() {
+		if (this.state.hasError) {
+			return null
+		}
+
+		return this.props.children
 	}
 }
 
@@ -82,6 +117,9 @@ export function TripMap({
 	selectedDayIndex,
 	selectedCityIndex,
 }: TripMapProps) {
+	const [mapHasError, setMapHasError] = useState(false)
+	const mapReadyRef = useRef(false)
+
 	const markers = useMemo(() => {
 		const placeMarkers: PlaceMarker[] = []
 
@@ -132,12 +170,39 @@ export function TripMap({
 
 	const region = useMemo(() => calculateMapRegion(markers), [markers])
 
+	useEffect(() => {
+		if (markers.length === 0) {
+			setMapHasError(false)
+			mapReadyRef.current = false
+			return
+		}
+
+		setMapHasError(false)
+		mapReadyRef.current = false
+
+		const timeout = setTimeout(() => {
+			if (!mapReadyRef.current) {
+				setMapHasError(true)
+			}
+		}, 4500)
+
+		return () => clearTimeout(timeout)
+	}, [markers])
+
 	if (markers.length === 0) {
 		return (
 			<View style={styles.noMapContainer}>
 				<Text style={styles.noMapText}>
 					No places with coordinates available
 				</Text>
+			</View>
+		)
+	}
+
+	if (mapHasError) {
+		return (
+			<View style={styles.mapErrorContainer}>
+				<Text style={styles.mapErrorText}>Can&apos;t load map</Text>
 			</View>
 		)
 	}
@@ -151,39 +216,49 @@ export function TripMap({
 				</Text>
 			</View>
 			<View style={styles.mapWrapper}>
-				<MapView
-					style={styles.map}
-					initialRegion={region}
-					region={region}
-					scrollEnabled={true}
-					zoomEnabled={true}
-					rotateEnabled={false}
-					pitchEnabled={false}
-				>
-					{markers.map((marker, index) => {
-						const markerColor = getDayColor(marker.dayNumber)
+				<MapErrorBoundary onMapRenderError={() => setMapHasError(true)}>
+					<MapView
+						style={styles.map}
+						initialRegion={region}
+						region={region}
+						scrollEnabled={true}
+						zoomEnabled={true}
+						rotateEnabled={false}
+						pitchEnabled={false}
+						onMapReady={() => {
+							mapReadyRef.current = true
+							setMapHasError(false)
+						}}
+						onMapLoaded={() => {
+							mapReadyRef.current = true
+							setMapHasError(false)
+						}}
+					>
+						{markers.map((marker, index) => {
+							const markerColor = getDayColor(marker.dayNumber)
 
-						return (
-							<Marker
-								key={`${marker.place.name}-${marker.dayNumber}-${index}`}
-								coordinate={marker.coordinate}
-								title={marker.place.name}
-								description={`Day ${marker.dayNumber} • Place #${marker.placeIndexInDay}`}
-							>
-								<View
-									style={[
-										styles.markerContainer,
-										{ backgroundColor: markerColor },
-									]}
+							return (
+								<Marker
+									key={`${marker.place.name}-${marker.dayNumber}-${index}`}
+									coordinate={marker.coordinate}
+									title={marker.place.name}
+									description={`Day ${marker.dayNumber} • Place #${marker.placeIndexInDay}`}
 								>
-									<Text style={styles.markerText}>
-										{marker.placeIndexInDay}
-									</Text>
-								</View>
-							</Marker>
-						)
-					})}
-				</MapView>
+									<View
+										style={[
+											styles.markerContainer,
+											{ backgroundColor: markerColor },
+										]}
+									>
+										<Text style={styles.markerText}>
+											{marker.placeIndexInDay}
+										</Text>
+									</View>
+								</Marker>
+							)
+						})}
+					</MapView>
+				</MapErrorBoundary>
 			</View>
 		</View>
 	)
@@ -239,6 +314,21 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		fontWeight: '500',
 		color: '#9ca3af',
+		textAlign: 'center',
+	},
+	mapErrorContainer: {
+		marginHorizontal: 20,
+		marginBottom: 16,
+		backgroundColor: '#e5e7eb',
+		borderRadius: 16,
+		padding: 24,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	mapErrorText: {
+		fontSize: 15,
+		fontWeight: '500',
+		color: '#111111',
 		textAlign: 'center',
 	},
 	markerContainer: {
