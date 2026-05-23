@@ -285,7 +285,6 @@ export default function CreateTripScreen() {
 	}
 
 	const handleStartDateChange = (event: any, selectedDate?: Date) => {
-		setShowDatePicker(false)
 		if (selectedDate) {
 			setTripStartDate(selectedDate)
 		}
@@ -348,7 +347,7 @@ export default function CreateTripScreen() {
 
 						<TouchableOpacity
 							style={styles.dateButton}
-							onPress={() => setShowDatePicker(true)}
+							onPress={() => setShowDatePicker(!showDatePicker)}
 							activeOpacity={0.7}
 						>
 							<View style={styles.dateButtonContent}>
