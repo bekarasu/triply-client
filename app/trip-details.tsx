@@ -51,8 +51,11 @@ export default function TripDetailsScreen() {
 	const [selectedCityIndex, setSelectedCityIndex] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
 	const hasShownStorePromptRef = React.useRef(false)
+	const isNavigatingAwayRef = React.useRef(false)
 
 	const handleBackNavigation = useCallback(() => {
+		isNavigatingAwayRef.current = true
+
 		if (typeof from === 'string' && from.trim().length > 0) {
 			clearTripData()
 			router.replace(from.trim() as RelativePathString)
@@ -76,21 +79,24 @@ export default function TripDetailsScreen() {
 	}, [handleBackNavigation])
 
 	useEffect(() => {
-		const loadTripDetails = async () => {
-			try {
-				Logger.log('Loading trip details', {
-					tripId,
-					hasContextDetails: !!contextTripDetails,
-				})
+		let isMounted = true
 
+		const loadTripDetails = async () => {
+			if (isNavigatingAwayRef.current) {
+				return
+			}
+
+			if (!tripId && !contextTripDetails) {
+				Logger.log(
+					'No tripId or context trip details available, skipping load',
+				)
+				return
+			}
+
+			try {
 				if (tripId) {
-					// Fetch trip from API
-					Logger.log('Fetching trip from API with ID:', tripId)
+					if (!isMounted) return
 					const details = await tripService.getTripById(tripId)
-					Logger.log(
-						'Received trip details from API:',
-						JSON.stringify(details),
-					)
 
 					if (
 						!details ||
@@ -109,10 +115,9 @@ export default function TripDetailsScreen() {
 					Logger.log('Using trip details from context')
 					setTripDetails(contextTripDetails)
 					setStartDate(tripStartDate)
-				} else {
-					Logger.log('No tripId or context trip details available')
 				}
 			} catch (error) {
+				if (!isMounted) return
 				Logger.error('Error loading trip details:', error)
 				Alert.alert(
 					'Error',
@@ -125,11 +130,17 @@ export default function TripDetailsScreen() {
 					],
 				)
 			} finally {
-				setIsLoading(false)
+				if (isMounted) {
+					setIsLoading(false)
+				}
 			}
 		}
 
 		loadTripDetails()
+
+		return () => {
+			isMounted = false
+		}
 	}, [tripId, contextTripDetails, router, tripStartDate])
 
 	useEffect(() => {
