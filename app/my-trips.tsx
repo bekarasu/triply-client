@@ -205,17 +205,8 @@ export default function MyTripsScreen() {
 							{/* Show number of places */}
 							<View style={styles.placesInfo}>
 								<Text style={styles.placesText}>
-									{trip.cities.reduce(
-										(total, city) =>
-											total +
-											city.days.reduce(
-												(dayTotal, day) =>
-													dayTotal +
-													day.places.length,
-												0,
-											),
-										0,
-									)}{' '}
+									{`${trip.visitPlaceCounts || 0} `}
+									{''}
 									places to visit
 								</Text>
 							</View>

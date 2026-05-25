@@ -94,6 +94,7 @@ export interface MyTrip {
 	totalBudget: number
 	totalDuration: number
 	cities: MyTripCity[]
+	visitPlaceCounts?: number
 }
 
 export interface MyTripsResponse {
