@@ -29,7 +29,7 @@ class HttpClient {
 	private requestQueue: QueuedRequest[] = []
 
 	constructor() {
-		this.timeout = API_CONFIG.TIMEOUT
+		this.timeout = API_CONFIG.TIMEOUT || 60000
 	}
 
 	private normalizeHeaders(
