@@ -77,8 +77,8 @@ function getDayColor(dayNumber: number): string {
 function calculateMapRegion(markers: PlaceMarker[]): Region {
 	if (markers.length === 0) {
 		return {
-			latitude: 41.0082,
-			longitude: 28.9784,
+			latitude: 0,
+			longitude: 0,
 			latitudeDelta: 0.1,
 			longitudeDelta: 0.1,
 		}
