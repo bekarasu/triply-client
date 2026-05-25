@@ -1,3 +1,4 @@
+import { getDayColor } from '@/constants/Colors'
 import { DayItinerary } from '@/services/trip/types'
 import React, { useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
@@ -69,8 +70,15 @@ export function DayCard({
 				activeOpacity={0.7}
 			>
 				<View style={styles.headerLeft}>
-					<View style={styles.dayBadge}>
-						<Text style={styles.dayBadgeText}>
+					<View
+						style={[
+							styles.dayBadge,
+							{ backgroundColor: getDayColor(dayItinerary.day) },
+						]}
+					>
+						<Text
+							style={[styles.dayBadgeText, { color: '#ffffff' }]}
+						>
 							Day {dayItinerary.day}
 						</Text>
 					</View>
@@ -140,7 +148,16 @@ export function DayCard({
 							</View>
 							{dayItinerary.places.map((place, index) => (
 								<View key={index} style={styles.item}>
-									<View style={styles.itemNumber}>
+									<View
+										style={[
+											styles.itemNumber,
+											{
+												backgroundColor: getDayColor(
+													dayItinerary.day,
+												),
+											},
+										]}
+									>
 										<Text style={styles.itemNumberText}>
 											{index + 1}
 										</Text>
@@ -175,7 +192,16 @@ export function DayCard({
 							</View>
 							{dayItinerary.foodPlaces.map((foodPlace, index) => (
 								<View key={index} style={styles.item}>
-									<View style={styles.itemNumber}>
+									<View
+										style={[
+											styles.itemNumber,
+											{
+												backgroundColor: getDayColor(
+													dayItinerary.day,
+												),
+											},
+										]}
+									>
 										<Text style={styles.itemNumberText}>
 											{index + 1}
 										</Text>

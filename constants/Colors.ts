@@ -42,4 +42,22 @@ const Colors = {
 	},
 }
 
+export const DAY_COLORS = [
+	'#ef4444', // Day 1 - red
+	'#3b82f6', // Day 2 - blue
+	'#10b981', // Day 3 - green
+	'#f59e0b', // Day 4 - amber
+	'#8b5cf6', // Day 5 - purple
+	'#ec4899', // Day 6 - pink
+	'#14b8a6', // Day 7 - teal
+	'#f97316', // Day 8 - orange
+	'#6366f1', // Day 9 - indigo
+	'#84cc16', // Day 10 - lime
+]
+
+export function getDayColor(dayNumber: number): string {
+	const index = (dayNumber - 1) % DAY_COLORS.length
+	return DAY_COLORS[index]
+}
+
 export default Colors
