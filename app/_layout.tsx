@@ -1,9 +1,5 @@
 import { NetworkMonitorOverlay } from '@/components/NetworkMonitorOverlay'
-import {
-	DarkTheme,
-	DefaultTheme,
-	ThemeProvider,
-} from '@react-navigation/native'
+import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router/react-navigation';
 import { useFonts } from 'expo-font'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'

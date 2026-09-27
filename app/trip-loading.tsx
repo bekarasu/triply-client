@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Logger } from '@/services/logger'
 import { formatDateOnly } from '@/utils/date'
 import { useRouter } from 'expo-router'
@@ -9,12 +10,10 @@ import {
 	AppState,
 	BackHandler,
 	Platform,
-	SafeAreaView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
-} from 'react-native'
+	View} from 'react-native'
 import { useTripContext } from '../contexts/TripContext'
 import { tripService } from '../services/trip/service'
 

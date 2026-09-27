@@ -1,24 +1,23 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlaceholderColor } from '@/hooks/usePlaceholderColor'
 import { authService } from '@/services/auth/service'
 import { ApiError } from '@/services/http-client'
 import { profileService } from '@/services/profile/service'
 import { useRouter } from 'expo-router'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
 	ActivityIndicator,
 	Alert,
 	Keyboard,
 	KeyboardAvoidingView,
 	Platform,
-	SafeAreaView,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	TouchableWithoutFeedback,
-	View,
-} from 'react-native'
+	View} from 'react-native'
 
 export default function LoginScreen() {
 	const placeholderColor = usePlaceholderColor()
@@ -26,10 +25,7 @@ export default function LoginScreen() {
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false)
 	const router = useRouter()
-
-	const handlePasswordChange = (text: string) => {
-		setPassword(text)
-	}
+	const passwordRef = useRef<TextInput>(null)
 
 	const handleLogin = async () => {
 		if (!email || !password) {
@@ -37,20 +33,19 @@ export default function LoginScreen() {
 			return
 		}
 
-		// Debug: Check if password field has content
-		if (password.length === 0) {
-			Alert.alert('Debug', 'Password field appears to be empty')
-			return
-		}
-
+		// CRITICAL: Dismiss keyboard *before* the async request.
+		// This cues the OS that the form submission has started.
+		Keyboard.dismiss()
 		setLoading(true)
+
 		try {
 			await authService.login({ email, password })
 
 			const profile = await profileService.getInfo()
 			await profileService.storeData(profile)
 
-			// Navigate to main app
+			// The OS sees the password field lost focus, followed by a screen transition.
+			// This is the heuristic that triggers the "Save Password" prompt.
 			router.replace('/home')
 		} catch (error: any) {
 			const apiError = error as ApiError
@@ -73,26 +68,10 @@ export default function LoginScreen() {
 					<ScrollView
 						style={styles.scrollView}
 						contentContainerStyle={styles.scrollContent}
+						keyboardShouldPersistTaps="handled" // Ensures buttons can be pressed while keyboard is up
 					>
 						<View style={styles.content}>
 							<View style={styles.formCard}>
-								{/* <View style={styles.envContainer}>
-								<Text style={styles.envTitle}>
-									Environment Configuration:
-								</Text>
-								<Text style={styles.envText}>
-									RECOMMENDATION_SERVICE:{' '}
-									{ENV_CONFIG.RECOMMENDATION_SERVICE_URL}
-								</Text>
-								<Text style={styles.envText}>
-									USER_SERVICE: {ENV_CONFIG.USER_SERVICE_URL}
-								</Text>
-								<Text style={styles.envText}>
-									TRAVEL_SERVICE:{' '}
-									{ENV_CONFIG.TRAVEL_SERVICE_URL}
-								</Text>
-							</View> */}
-
 								<View style={styles.headerSection}>
 									<View style={styles.logoContainer}>
 										<Text style={styles.logoText}>✈️</Text>
@@ -116,25 +95,33 @@ export default function LoginScreen() {
 										keyboardType="email-address"
 										autoCapitalize="none"
 										autoCorrect={false}
+										// Updated Autofill Props
 										autoComplete="email"
 										textContentType="emailAddress"
+										importantForAutofill="yes"
 										returnKeyType="next"
+										onSubmitEditing={() =>
+											passwordRef.current?.focus()
+										}
+										blurOnSubmit={false}
 									/>
 								</View>
 
 								<View style={styles.inputContainer}>
 									<TextInput
+										ref={passwordRef}
 										style={styles.input}
 										placeholder="Password"
 										placeholderTextColor={placeholderColor}
 										value={password}
-										onChangeText={handlePasswordChange}
+										onChangeText={setPassword}
 										secureTextEntry={true}
 										autoCapitalize="none"
-										autoComplete="password"
-										textContentType="oneTimeCode"
 										autoCorrect={false}
-										blurOnSubmit={false}
+										// Updated Autofill Props
+										autoComplete="password"
+										textContentType="password"
+										importantForAutofill="yes"
 										returnKeyType="done"
 										onSubmitEditing={handleLogin}
 									/>
@@ -156,12 +143,6 @@ export default function LoginScreen() {
 										</Text>
 									)}
 								</TouchableOpacity>
-
-								{/* <TouchableOpacity style={styles.forgotPassword}>
-					<Text style={styles.forgotPasswordText}>
-						Forgot Password?
-					</Text>
-				</TouchableOpacity> */}
 
 								<View style={styles.signupContainer}>
 									<Text style={styles.signupText}>
@@ -210,26 +191,6 @@ const styles = StyleSheet.create({
 		width: '100%',
 		maxWidth: 420,
 		alignSelf: 'center',
-	},
-	envContainer: {
-		backgroundColor: '#f0f0f0',
-		padding: 12,
-		borderRadius: 8,
-		marginBottom: 20,
-		borderWidth: 1,
-		borderColor: '#d0d0d0',
-	},
-	envTitle: {
-		fontSize: 14,
-		fontWeight: '700',
-		color: '#1f2937',
-		marginBottom: 8,
-	},
-	envText: {
-		fontSize: 11,
-		color: '#4b5563',
-		marginBottom: 4,
-		fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
 	},
 	headerSection: {
 		alignItems: 'center',
@@ -307,14 +268,6 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		fontWeight: '700',
 		textAlign: 'center',
-	},
-	forgotPassword: {
-		alignItems: 'center',
-		marginBottom: 32,
-	},
-	forgotPasswordText: {
-		color: '#007AFF',
-		fontSize: 14,
 	},
 	signupContainer: {
 		flexDirection: 'row',

@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '@/components/ui/Card'
 import { useTripContext } from '@/contexts/TripContext'
 import { Logger } from '@/services/logger'
@@ -8,13 +9,11 @@ import { useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import {
 	ActivityIndicator,
-	SafeAreaView,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
-} from 'react-native'
+	View} from 'react-native'
 
 export default function MyTripsScreen() {
 	const [trips, setTrips] = useState<MyTrip[]>([])

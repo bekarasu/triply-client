@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { cityService } from '@/services/city/service'
 import { Logger } from '@/services/logger'
 import { recommendationService } from '@/services/recommendation/service'
@@ -10,13 +11,11 @@ import {
 	Alert,
 	KeyboardAvoidingView,
 	Platform,
-	SafeAreaView,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
-} from 'react-native'
+	View} from 'react-native'
 import CriteriaModal from '../components/CriteriaModal'
 import DestinationSearch from '../components/create-trip/DestinationSearch'
 import CreateTripPlanOverview from '../components/create-trip/PlanOverview'

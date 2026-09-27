@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTripContext } from '@/contexts/TripContext'
 import { authService } from '@/services/auth/service'
 import { cityService } from '@/services/city/service'
@@ -15,14 +16,12 @@ import {
 	Alert,
 	Dimensions,
 	Image,
-	SafeAreaView,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	TouchableWithoutFeedback,
-	View,
-} from 'react-native'
+	View} from 'react-native'
 
 export default function HomeScreen() {
 	const [profile, setProfile] = useState<Profile | null>(null)

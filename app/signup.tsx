@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlaceholderColor } from '@/hooks/usePlaceholderColor'
 import { authService } from '@/services/auth/service'
 import { ApiError } from '@/services/http-client'
@@ -9,15 +10,13 @@ import {
 	Keyboard,
 	KeyboardAvoidingView,
 	Platform,
-	SafeAreaView,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	TouchableWithoutFeedback,
-	View,
-} from 'react-native'
+	View} from 'react-native'
 
 export default function SignupScreen() {
 	const placeholderColor = usePlaceholderColor()

@@ -1,14 +1,13 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '@/services/auth/service'
 import { isOnboardingCompleted } from '@/utils/onboarding'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {
 	ActivityIndicator,
-	SafeAreaView,
 	StyleSheet,
 	Text,
-	View,
-} from 'react-native'
+	View} from 'react-native'
 
 export default function Index() {
 	const router = useRouter()

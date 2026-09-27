@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { DayCard } from '@/components/trip/DayCard'
 import { TripMap } from '@/components/trip/TripMap'
 import { useTripContext } from '@/contexts/TripContext'
@@ -17,13 +18,11 @@ import {
 	ActivityIndicator,
 	Alert,
 	BackHandler,
-	SafeAreaView,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
-} from 'react-native'
+	View} from 'react-native'
 
 const calculateDayDate = (startDate: Date, dayNumber: number): Date => {
 	const date = new Date(startDate)

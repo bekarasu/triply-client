@@ -1,15 +1,14 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { markOnboardingCompleted } from '@/utils/onboarding'
 import { useRouter } from 'expo-router'
 import { Logger } from '@/services/logger'
 import React from 'react'
 import {
 	Dimensions,
-	SafeAreaView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View,
-} from 'react-native'
+	View} from 'react-native'
 
 const { width } = Dimensions.get('window')
 
