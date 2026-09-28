@@ -16,7 +16,8 @@
 				"EXPO_PUBLIC_TRAVEL_SERVICE_URL": "http://192.168.1.102:3003/travel",
 				"EXPO_PUBLIC_ENABLE_NETWORK_MONITOR": "true",
 				"EXPO_PUBLIC_API_TIMEOUT": "60000",
-				"EXPO_PUBLIC_NODE_ENV": "development"
+				"EXPO_PUBLIC_NODE_ENV": "development",
+				"EXPO_PUBLIC_USE_RN_FETCH": "1"
 			}
 		}
 	}

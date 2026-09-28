@@ -1,8 +1,7 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Logger } from '@/services/logger'
-import { formatDateOnly } from '@/utils/date'
-import { useRouter } from 'expo-router'
-import React, { useEffect, useRef, useState } from 'react'
+import { Logger } from '@/services/logger';
+import { formatDateOnly } from '@/utils/date';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
 	Alert,
@@ -13,11 +12,13 @@ import {
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View} from 'react-native'
-import { useTripContext } from '../contexts/TripContext'
-import { tripService } from '../services/trip/service'
+	View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTripContext } from '../contexts/TripContext';
+import { tripService } from '../services/trip/service';
 
-import Constants, { ExecutionEnvironment } from 'expo-constants'
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 
 type ExpoNotificationsModule = typeof import('expo-notifications')
 type NotificationSubscription = { remove: () => void }
@@ -312,7 +313,7 @@ export default function TripLoadingScreen() {
 								style={[
 									styles.progressDot,
 									index <= currentStep &&
-										styles.progressDotActive,
+									styles.progressDotActive,
 								]}
 							/>
 						))}

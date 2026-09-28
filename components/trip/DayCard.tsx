@@ -115,7 +115,7 @@ export function DayCard({
 									</Text>
 								) : (
 									<Text style={styles.weatherPrecip}>
-										💧 -
+										💧
 									</Text>
 								)}
 							</View>
