@@ -55,7 +55,11 @@ export default function TripDetailsScreen() {
 	const handleBackNavigation = useCallback(() => {
 		isNavigatingAwayRef.current = true
 
-		if (typeof from === 'string' && from.trim().length > 0) {
+		if (
+			typeof from === 'string' &&
+			from.trim().length > 0 &&
+			from !== '/create-trip'
+		) {
 			clearTripData()
 			router.replace(from.trim() as RelativePathString)
 			return
