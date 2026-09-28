@@ -1,6 +1,6 @@
 import { City } from '@/services/city/types'
 import { Criteria } from '@/services/recommendation/types'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
 	ActivityIndicator,
 	StyleSheet,
@@ -33,6 +33,7 @@ interface CreateTripPlanOverviewProps {
 	onFinalizeTripSelection: () => void
 	formatDateForDisplay: (date: Date | null) => string
 	onCitiesReorder: (reorderedCities: CityWithCriteria[]) => void
+	onCityEdit?: (city: CityWithCriteria) => void
 	maxCities: number
 	isFinalizing: boolean
 }
@@ -45,6 +46,7 @@ export default function CreateTripPlanOverview({
 	onFinalizeTripSelection,
 	formatDateForDisplay,
 	onCitiesReorder,
+	onCityEdit,
 	maxCities,
 	isFinalizing,
 }: CreateTripPlanOverviewProps) {
@@ -121,6 +123,16 @@ export default function CreateTripPlanOverview({
 							{cityWithCriteria.city.name}
 						</Text>
 						<View style={styles.cityActions}>
+							{onCityEdit && (
+								<TouchableOpacity
+									onPress={() => {
+										onCityEdit(cityWithCriteria)
+									}}
+									style={styles.editButton}
+								>
+									<Text style={styles.editButtonText}>✎</Text>
+								</TouchableOpacity>
+							)}
 							<TouchableOpacity
 								onPress={() => {
 									onCitySelect(cityWithCriteria.city)
@@ -163,11 +175,11 @@ export default function CreateTripPlanOverview({
 						{formatDateForDisplay(
 							new Date(
 								tripStartDate.getTime() +
-									(((tripDuration ?? 0) as number) - 1) *
-										24 *
-										60 *
-										60 *
-										1000,
+								(((tripDuration ?? 0) as number) - 1) *
+								24 *
+								60 *
+								60 *
+								1000,
 							),
 						)}
 					</Text>
@@ -347,6 +359,24 @@ const styles = StyleSheet.create({
 	removeButtonText: {
 		color: '#fff',
 		fontSize: 16,
+		fontWeight: 'bold',
+	},
+	editButton: {
+		width: 28,
+		height: 28,
+		borderRadius: 14,
+		backgroundColor: '#6366f1',
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: '#6366f1',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	editButtonText: {
+		color: '#fff',
+		fontSize: 14,
 		fontWeight: 'bold',
 	},
 	criteriaContainer: {

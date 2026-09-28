@@ -16,7 +16,11 @@ import { City } from '../services/city/types'
 interface CriteriaModalProps {
 	visible: boolean
 	city: City | null
-	criterias?: Criteria[]
+	initialData?: {
+		budget: number
+		duration: number
+		criterias: Criteria[]
+	}
 	onClose: () => void
 	onSubmit: (
 		city: City,
@@ -34,6 +38,7 @@ export default function CriteriaModal({
 	visible,
 	city,
 	criterias: recommendationCriterias = [],
+	initialData,
 	onClose,
 	onSubmit,
 }: CriteriaModalProps) {
@@ -41,6 +46,20 @@ export default function CriteriaModal({
 	const [budget, setBudget] = useState('')
 	const [duration, setDuration] = useState('')
 	const [selectedCriterias, setSelectedCriterias] = useState<Criteria[]>([])
+
+	React.useEffect(() => {
+		if (visible && city) {
+			if (initialData) {
+				setBudget(initialData.budget > 0 ? initialData.budget.toString() : '')
+				setDuration(initialData.duration > 0 ? initialData.duration.toString() : '')
+				setSelectedCriterias(initialData.criterias || [])
+			} else {
+				setBudget('')
+				setDuration('')
+				setSelectedCriterias([])
+			}
+		}
+	}, [visible, city, initialData])
 
 	const resetForm = () => {
 		setBudget('')
@@ -371,7 +390,7 @@ export default function CriteriaModal({
 						style={styles.submitButton}
 						onPress={handleSubmit}
 					>
-						<Text style={styles.submitButtonText}>Add City</Text>
+						<Text style={styles.submitButtonText}>{initialData ? 'Save Changes' : 'Add City'}</Text>
 					</TouchableOpacity>
 				</View>
 			</View>

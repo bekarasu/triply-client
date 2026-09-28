@@ -29,6 +29,11 @@ const MAX_TRIP_CITIES = 5
 interface CriteriaModalState {
 	visible: boolean
 	city: City | null
+	initialData?: {
+		budget: number
+		duration: number
+		criterias: Criteria[]
+	}
 }
 
 export default function CreateTripScreen() {
@@ -41,6 +46,7 @@ export default function CreateTripScreen() {
 		reorderCities,
 		selectedCity,
 		setSelectedCity,
+		setSelectedCities,
 	} = useTripContext()
 
 	const [searchQuery, setSearchQuery] = useState('')
@@ -192,6 +198,14 @@ export default function CreateTripScreen() {
 		reorderCities(reorderedCities)
 	}
 
+	const handleCityEdit = (cityWithCriteria: CityWithCriteria) => {
+		setCriteriaModal({
+			visible: true,
+			city: cityWithCriteria.city,
+			initialData: cityWithCriteria.data,
+		})
+	}
+
 	const addCityWithCriteria = (
 		city: City,
 		data: {
@@ -200,7 +214,8 @@ export default function CreateTripScreen() {
 			criterias: Criteria[]
 		},
 	) => {
-		if (selectedCities.length >= MAX_TRIP_CITIES) {
+		const existingIndex = selectedCities.findIndex((c) => c.city.id === city.id)
+		if (existingIndex === -1 && selectedCities.length >= MAX_TRIP_CITIES) {
 			Alert.alert(
 				'City Limit Reached',
 				`You can add up to ${MAX_TRIP_CITIES} cities per trip. Remove a city before adding a new one.`,
@@ -216,7 +231,15 @@ export default function CreateTripScreen() {
 				criterias: data.criterias,
 			},
 		}
-		addCity(newCityWithCriteria)
+
+		if (existingIndex >= 0) {
+			const updatedCities = [...selectedCities]
+			updatedCities[existingIndex] = newCityWithCriteria
+			setSelectedCities(updatedCities)
+		} else {
+			addCity(newCityWithCriteria)
+		}
+
 		setCriteriaModal({ visible: false, city: null })
 		setSearchResults([])
 		setSearchQuery('')
@@ -417,6 +440,7 @@ export default function CreateTripScreen() {
 						tripStartDate={tripStartDate}
 						tripDuration={tripDuration}
 						onCitySelect={handleCitySelect}
+						onCityEdit={handleCityEdit}
 						onFinalizeTripSelection={handleFinalizeTripSelection}
 						formatDateForDisplay={formatDateForDisplay}
 						onCitiesReorder={handleCitiesReorder}
@@ -431,6 +455,7 @@ export default function CreateTripScreen() {
 				visible={criteriaModal.visible}
 				city={criteriaModal.city}
 				criterias={recommendationCriterias}
+				initialData={criteriaModal.initialData}
 				onClose={() => setCriteriaModal({ visible: false, city: null })}
 				onSubmit={addCityWithCriteria}
 			/>
