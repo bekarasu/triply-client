@@ -180,6 +180,88 @@ export default function TripLoadingScreen() {
 		hasCreatedTripRef.current = true
 		abortControllerRef.current = new AbortController()
 
+		// Track whether the app went to background during the request
+		let wentToBackground = false
+		const appStateSubscription = AppState.addEventListener(
+			'change',
+			(nextState) => {
+				if (nextState === 'background' || nextState === 'inactive') {
+					wentToBackground = true
+				}
+			},
+		)
+
+		const pollForCompletedTrip = async (): Promise<boolean> => {
+			const expectedStartDate = formatDateOnly(tripStartDate)
+			const POLL_INTERVAL = 3000
+			const MAX_POLL_DURATION = 5 * 60 * 1000 // 5 minutes
+			const startTime = Date.now()
+
+			Logger.log(
+				'Polling for completed trip with startDate:',
+				expectedStartDate,
+			)
+
+			while (Date.now() - startTime < MAX_POLL_DURATION) {
+				try {
+					const trips = await tripService.getMyTrips()
+					// Find a trip matching our expected start date (most recent = last created)
+					const matchingTrip = trips.find(
+						(t) => t.startDate === expectedStartDate,
+					)
+
+					if (matchingTrip) {
+						Logger.log('Found completed trip:', matchingTrip.id)
+						// Fetch full trip details
+						const tripDetails = await tripService.getTripById(
+							matchingTrip.id,
+						)
+						setTripDetails(tripDetails)
+
+						// Check if we're still in background
+						const currentState = AppState.currentState
+						const isStillBackground =
+							currentState === 'background' ||
+							currentState === 'inactive'
+
+						if (
+							isStillBackground &&
+							NotificationsModule &&
+							notificationsEnabledRef.current
+						) {
+							await NotificationsModule.scheduleNotificationAsync(
+								{
+									content: {
+										title: 'Your Trip is Ready!',
+										body: 'Your personalized trip has been created. Tap to view details.',
+										data: { screen: 'trip-details' },
+									},
+									trigger: null,
+								},
+							)
+						} else {
+							setTimeout(() => {
+								router.replace({
+									pathname: '/trip-details',
+									params: { from: '/create-trip' },
+								})
+							}, 500)
+						}
+						return true
+					}
+				} catch (pollError) {
+					Logger.log('Poll attempt failed:', pollError)
+				}
+
+				// Wait before next poll
+				await new Promise((resolve) =>
+					setTimeout(resolve, POLL_INTERVAL),
+				)
+			}
+
+			return false
+		}
+
 		const createTrip = async () => {
 			try {
 				const response = await tripService.createTrip(
@@ -233,9 +315,59 @@ export default function TripLoadingScreen() {
 					return
 				}
 
+				// If the app went to background and we got a network error,
+				// the server is likely still processing. Poll for the result.
+				const isNetworkError =
+					error?.message === 'Network request failed' ||
+					error?.status === 0
+				if (wentToBackground && isNetworkError) {
+					Logger.log(
+						'Network error after backgrounding — server likely still processing. Starting poll...',
+					)
+
+					// Wait for app to come back to foreground before polling
+					const waitForForeground = (): Promise<void> => {
+						return new Promise((resolve) => {
+							if (AppState.currentState === 'active') {
+								resolve()
+								return
+							}
+							const sub = AppState.addEventListener(
+								'change',
+								(state) => {
+									if (state === 'active') {
+										sub.remove()
+										resolve()
+									}
+								},
+							)
+						})
+					}
+
+					await waitForForeground()
+					const found = await pollForCompletedTrip()
+					if (found) return
+
+					// Polling timed out — redirect to my trips
+					Logger.log(
+						'Polling timed out. Redirecting to my trips.',
+					)
+					Alert.alert(
+						'Trip May Still Be Processing',
+						'Your trip is taking longer than expected. Check My Trips shortly.',
+						[
+							{
+								text: 'Go to My Trips',
+								onPress: () =>
+									router.replace('/my-trips'),
+							},
+						],
+					)
+					return
+				}
+
 				Logger.error('Error creating trip:', error)
 
-				// Extract error message from server response
 				const errorMessage =
 					error?.response?.data?.message ||
 					error?.message ||
@@ -253,6 +385,7 @@ export default function TripLoadingScreen() {
 		createTrip()
 
 		return () => {
+			appStateSubscription.remove()
 			if (abortControllerRef.current) {
 				abortControllerRef.current.abort()
 			}
