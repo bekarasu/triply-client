@@ -243,7 +243,7 @@ export default function TripLoadingScreen() {
 				Alert.alert('Trip Creation Failed', errorMessage, [
 					{
 						text: 'OK',
-						onPress: () => router.replace('/home'),
+						onPress: () => router.replace('/create-trip'),
 					},
 				])
 			}
@@ -256,7 +256,7 @@ export default function TripLoadingScreen() {
 				abortControllerRef.current.abort()
 			}
 		}
-	}, [selectedCities, tripStartDate, router])
+	}, [])
 
 	useEffect(() => {
 		Animated.timing(fadeAnim, {

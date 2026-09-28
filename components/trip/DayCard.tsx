@@ -109,14 +109,15 @@ export function DayCard({
 									)}
 									°
 								</Text>
-								<Text style={styles.weatherPrecip}>
-									💧{' '}
-									{
-										dayItinerary.weather
-											.precipitationProbability
-									}
-									%
-								</Text>
+								{dayItinerary.weather.precipitationProbability != null && dayItinerary.weather.precipitationProbability !== '' ? (
+									<Text style={styles.weatherPrecip}>
+										💧 {dayItinerary.weather.precipitationProbability}%
+									</Text>
+								) : (
+									<Text style={styles.weatherPrecip}>
+										💧 -
+									</Text>
+								)}
 							</View>
 						</View>
 					) : (
@@ -181,7 +182,7 @@ export function DayCard({
 							style={[
 								styles.section,
 								dayItinerary.places.length > 0 &&
-									styles.sectionWithMargin,
+								styles.sectionWithMargin,
 							]}
 						>
 							<View style={styles.sectionHeader}>

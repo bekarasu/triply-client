@@ -220,9 +220,11 @@ export default function MyTripsScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		backgroundColor: '#f8f9fa',
 	},
 	safeArea: {
 		flex: 1,
+		backgroundColor: '#f8f9fa',
 	},
 	loadingContainer: {
 		flex: 1,
