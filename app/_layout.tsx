@@ -75,7 +75,7 @@ export default function RootLayout() {
 								<Stack.Screen name="trip-details" />
 								<Stack.Screen name="+not-found" />
 							</Stack>
-							<StatusBar style="auto" />
+							<StatusBar style="dark" />
 							<NetworkMonitorOverlay />
 						</ThemeProvider>
 					</SafeAreaView>
