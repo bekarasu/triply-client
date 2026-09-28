@@ -37,7 +37,7 @@ export default function RootLayout() {
 	}
 
 	const safeAreaEdges =
-		Platform.OS === 'android' ? ANDROID_SAFE_AREA_EDGES : undefined
+		Platform.OS === 'android' ? ANDROID_SAFE_AREA_EDGES : []
 
 	return (
 		<GestureHandlerRootView style={styles.flex}>

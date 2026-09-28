@@ -17,11 +17,16 @@ import {
 import { useTripContext } from '../contexts/TripContext'
 import { tripService } from '../services/trip/service'
 
+import Constants, { ExecutionEnvironment } from 'expo-constants'
+
 type ExpoNotificationsModule = typeof import('expo-notifications')
 type NotificationSubscription = { remove: () => void }
 
+const isExpoGo =
+	Constants.executionEnvironment === ExecutionEnvironment.StoreClient
+
 const NotificationsModule: ExpoNotificationsModule | null =
-	Platform.OS === 'ios'
+	Platform.OS === 'ios' && !isExpoGo
 		? (require('expo-notifications') as ExpoNotificationsModule)
 		: null
 

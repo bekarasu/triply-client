@@ -1,12 +1,11 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { cityService } from '@/services/city/service'
-import { Logger } from '@/services/logger'
-import { recommendationService } from '@/services/recommendation/service'
-import { Criteria } from '@/services/recommendation/types'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import DateTimePicker from '@react-native-community/datetimepicker'
-import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { cityService } from '@/services/city/service';
+import { Logger } from '@/services/logger';
+import { recommendationService } from '@/services/recommendation/service';
+import { Criteria } from '@/services/recommendation/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	Alert,
 	KeyboardAvoidingView,
@@ -15,13 +14,15 @@ import {
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	View} from 'react-native'
-import CriteriaModal from '../components/CriteriaModal'
-import DestinationSearch from '../components/create-trip/DestinationSearch'
-import CreateTripPlanOverview from '../components/create-trip/PlanOverview'
-import PopularCities from '../components/create-trip/PopularCity'
-import { CityWithCriteria, useTripContext } from '../contexts/TripContext'
-import { City } from '../services/city/types'
+	View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import CriteriaModal from '../components/CriteriaModal';
+import DestinationSearch from '../components/create-trip/DestinationSearch';
+import CreateTripPlanOverview from '../components/create-trip/PlanOverview';
+import PopularCities from '../components/create-trip/PopularCity';
+import { CityWithCriteria, useTripContext } from '../contexts/TripContext';
+import { City } from '../services/city/types';
 
 const MAX_TRIP_CITIES = 5
 
@@ -284,6 +285,9 @@ export default function CreateTripScreen() {
 	}
 
 	const handleStartDateChange = (event: any, selectedDate?: Date) => {
+		if (Platform.OS === 'android') {
+			setShowDatePicker(false)
+		}
 		if (selectedDate) {
 			setTripStartDate(selectedDate)
 		}
@@ -374,9 +378,11 @@ export default function CreateTripScreen() {
 											? 'spinner'
 											: 'default'
 									}
-									onChange={handleStartDateChange}
+									themeVariant="light"
+									textColor="#000000"
+									onValueChange={handleStartDateChange}
+									onDismiss={() => setShowDatePicker(false)}
 									minimumDate={new Date()}
-									style={styles.datePicker}
 								/>
 							</View>
 						)}
@@ -595,8 +601,8 @@ const styles = StyleSheet.create({
 		paddingVertical: 12,
 		borderWidth: 1,
 		borderColor: '#e5e7eb',
-	},
-	datePicker: {
-		width: '100%',
-	},
+		overflow: 'hidden',
+		alignItems: 'center',
+		justifyContent: 'center',
+	}
 })
