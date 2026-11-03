@@ -23,6 +23,8 @@ export interface Place {
 	priorityLevel?: number
 	latitude?: number
 	longitude?: number
+	// Set when the coordinates came from Google, which requires attribution
+	coordinatesSource?: 'google'
 }
 
 export interface FoodPlace {
@@ -40,6 +42,14 @@ export interface Weather {
 	precipitationProbability: number
 }
 
+export interface DayRoute {
+	// Encoded polyline (precision 5) through the day's places, in listed order
+	polyline: string
+	distanceMeters: number
+	durationSeconds: number
+	source?: 'osrm' | 'google'
+}
+
 export interface DayItinerary {
 	day: number
 	description: string
@@ -47,6 +57,7 @@ export interface DayItinerary {
 	foodPlaces: FoodPlace[]
 	date: string
 	weather?: Weather
+	route?: DayRoute | null
 }
 
 export interface CityItinerary {

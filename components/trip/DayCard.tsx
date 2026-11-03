@@ -1,5 +1,6 @@
 import { getDayColor } from '@/constants/Colors'
 import { DayItinerary } from '@/services/trip/types'
+import { formatRouteDistance, formatRouteDuration } from '@/utils/route'
 import React, { useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
@@ -90,6 +91,20 @@ export function DayCard({
 							{dayItinerary.places.length} places •{' '}
 							{dayItinerary.foodPlaces.length} restaurants
 						</Text>
+						{dayItinerary.route && (
+							<Text style={styles.routeText}>
+								🚶{' '}
+								{formatRouteDistance(
+									dayItinerary.route.distanceMeters,
+								)}{' '}
+								•{' '}
+								{formatRouteDuration(
+									dayItinerary.route.durationSeconds,
+								)}
+								{dayItinerary.route.source === 'google' &&
+									' • Google Maps'}
+							</Text>
+						)}
 					</View>
 				</View>
 				<View style={styles.headerRight}>
@@ -278,6 +293,11 @@ const styles = StyleSheet.create({
 		fontWeight: '500',
 		color: '#6b7280',
 		flex: 1,
+	},
+	routeText: {
+		fontSize: 13,
+		fontWeight: '500',
+		color: '#6b7280',
 	},
 	headerRight: {
 		flexDirection: 'row',

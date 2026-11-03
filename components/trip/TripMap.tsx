@@ -1,8 +1,9 @@
 import { getDayColor } from '@/constants/Colors'
 import { CityItinerary, Place } from '@/services/trip/types'
+import { decodePolyline, RouteCoordinate } from '@/utils/route'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
-import MapView, { Marker, Region } from 'react-native-maps'
+import { Platform, StyleSheet, Text, View } from 'react-native'
+import MapView, { Marker, Polyline, Region } from 'react-native-maps'
 
 interface TripMapProps {
 	cities: CityItinerary[]
@@ -19,6 +20,14 @@ interface PlaceMarker {
 		latitude: number
 		longitude: number
 	}
+}
+
+interface RouteLine {
+	key: string
+	dayNumber: number
+	coordinates: RouteCoordinate[]
+	// No routed geometry from the backend: straight lines between the stops
+	isApproximate: boolean
 }
 
 interface MapErrorBoundaryProps {
@@ -102,8 +111,10 @@ export function TripMap({
 	const [mapHasError, setMapHasError] = useState(false)
 	const mapReadyRef = useRef(false)
 
-	const markers = useMemo(() => {
+	const { markers, routeLines, usesGoogleContent } = useMemo(() => {
 		const placeMarkers: PlaceMarker[] = []
+		const dayRouteLines: RouteLine[] = []
+		let hasGoogleContent = false
 
 		cities.forEach((city, cityIndex) => {
 			// If a city is selected, only show places from that city
@@ -124,6 +135,7 @@ export function TripMap({
 				}
 
 				let placeIndexInDay = 0
+				const dayCoordinates: RouteCoordinate[] = []
 				day.places.forEach((place) => {
 					if (
 						place.latitude != null &&
@@ -142,12 +154,43 @@ export function TripMap({
 								longitude: place.longitude,
 							},
 						})
+						dayCoordinates.push({
+							latitude: place.latitude,
+							longitude: place.longitude,
+						})
+						if (place.coordinatesSource === 'google') {
+							hasGoogleContent = true
+						}
 					}
 				})
+
+				const routeKey = `${cityIndex}-${dayIndex}`
+				if (day.route?.polyline) {
+					if (day.route.source === 'google') {
+						hasGoogleContent = true
+					}
+					dayRouteLines.push({
+						key: routeKey,
+						dayNumber: day.day,
+						coordinates: decodePolyline(day.route.polyline),
+						isApproximate: false,
+					})
+				} else if (dayCoordinates.length > 1) {
+					dayRouteLines.push({
+						key: routeKey,
+						dayNumber: day.day,
+						coordinates: dayCoordinates,
+						isApproximate: true,
+					})
+				}
 			})
 		})
 
-		return placeMarkers
+		return {
+			markers: placeMarkers,
+			routeLines: dayRouteLines,
+			usesGoogleContent: hasGoogleContent,
+		}
 	}, [cities, selectedCityIndex, selectedDayIndex])
 
 	const region = useMemo(() => calculateMapRegion(markers), [markers])
@@ -208,6 +251,19 @@ export function TripMap({
 							setMapHasError(false)
 						}}
 					>
+						{routeLines.map((line) => (
+							<Polyline
+								key={line.key}
+								coordinates={line.coordinates}
+								strokeColor={getDayColor(line.dayNumber)}
+								strokeWidth={4}
+								lineCap="round"
+								lineJoin="round"
+								lineDashPattern={
+									line.isApproximate ? [8, 8] : undefined
+								}
+							/>
+						))}
 						{markers.map((marker, index) => {
 							const markerColor = getDayColor(marker.dayNumber)
 
@@ -233,6 +289,12 @@ export function TripMap({
 						})}
 					</MapView>
 				</MapErrorBoundary>
+				{/* Android renders Google Maps, which already shows the Google logo */}
+				{usesGoogleContent && Platform.OS !== 'android' && (
+					<View style={styles.attribution}>
+						<Text style={styles.attributionText}>Google Maps</Text>
+					</View>
+				)}
 			</View>
 		</View>
 	)
@@ -274,6 +336,21 @@ const styles = StyleSheet.create({
 	},
 	map: {
 		flex: 1,
+	},
+	attribution: {
+		position: 'absolute',
+		right: 8,
+		bottom: 8,
+		paddingHorizontal: 6,
+		paddingVertical: 2,
+		borderRadius: 4,
+		backgroundColor: 'rgba(255, 255, 255, 0.9)',
+		pointerEvents: 'none',
+	},
+	attributionText: {
+		fontSize: 11,
+		fontWeight: '600',
+		color: '#1f2937',
 	},
 	noMapContainer: {
 		marginHorizontal: 20,
