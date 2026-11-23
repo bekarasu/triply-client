@@ -1,4 +1,7 @@
-import { NetworkMonitorOverlay } from '@/components/NetworkMonitorOverlay'
+// Must stay the first import: starts capturing console and fetch before the rest of the app runs.
+import '@/devTools/install'
+import { DevToolsBubble } from '@/devTools/DevToolsBubble'
+import { devTools } from '@/devTools/flag'
 import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router/react-navigation';
 import { useFonts } from 'expo-font'
 import { Stack } from 'expo-router'
@@ -76,10 +79,10 @@ export default function RootLayout() {
 								<Stack.Screen name="+not-found" />
 							</Stack>
 							<StatusBar style="dark" />
-							<NetworkMonitorOverlay />
 						</ThemeProvider>
 					</SafeAreaView>
 				</TripProvider>
+				{devTools && <DevToolsBubble />}
 			</SafeAreaProvider>
 		</GestureHandlerRootView>
 	)
