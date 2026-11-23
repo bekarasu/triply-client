@@ -8,5 +8,6 @@ declare namespace NodeJS {
 		EXPO_PUBLIC_TRAVEL_SERVICE_URL: string
 		EXPO_PUBLIC_API_TIMEOUT: string
 		EXPO_PUBLIC_ENABLE_NETWORK_MONITOR?: 'true' | 'false'
+		EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY?: string
 	}
 }
